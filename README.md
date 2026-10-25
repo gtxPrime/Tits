@@ -4,7 +4,7 @@
 
 <div align="center">
 
-# TITS
+# TITS - Test Intelligence & Tutoring System
 
 <p><strong>Everyone needs TITS during hard times. Undetectable, real-time AI copilot for exams, interviews, and technical problem solving.</strong></p>
 

@@ -42,7 +42,7 @@
     <span> &bull; </span>
     <a href="#-roadmap">Roadmap</a>
     <span> &bull; </span>
-    <a href="#-acknowledgements">Credits</a>
+    <a href="#-author">Author</a>
     <span> &bull; </span>
     <a href="#-star-history">Star History</a>
   </h3>
@@ -314,9 +314,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full architectural standards, testing
 
 [![Star History Chart](https://api.star-history.com/svg?repos=gtxPrime/Tits&type=Date)](https://star-history.com/#gtxPrime/Tits&Date)
 
-## <a id="-acknowledgements"></a><img src="https://api.iconify.design/fa6-solid/heart.svg?color=%23ffffff#gh-dark-mode-only" height="20" align="center" alt="Credits" /><img src="https://api.iconify.design/fa6-solid/heart.svg?color=%23121212#gh-light-mode-only" height="20" align="center" alt="Credits" /> Acknowledgements & Credits
+## <a id="-author"></a><img src="https://api.iconify.design/fa6-solid/user.svg?color=%23ffffff#gh-dark-mode-only" height="20" align="center" alt="Author" /><img src="https://api.iconify.design/fa6-solid/user.svg?color=%23121212#gh-light-mode-only" height="20" align="center" alt="Author" /> Author & Maintainer
 
-TITS was inspired by the early concepts in [sohzm/cheating-daddy](https://github.com/sohzm/cheating-daddy). We took the core premise and completely rebuilt it into an undetectable, enterprise-grade copilot with native Windows DWM composition bypass (`WDA_EXCLUDEFROMCAPTURE`), multi-channel taskbar badge projection, HiDPI cursor-targeted vision cropping, 16 kHz dual-stream audio, and full internationalization. Sincere gratitude to the original open-source contributors.
+Engineered and maintained solely by [gtxPrime](https://github.com/gtxPrime).
 
 ---
 

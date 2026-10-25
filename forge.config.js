@@ -55,6 +55,7 @@ module.exports = {
             config: {
                 options: {
                     name: 'tits',
+                    bin: 'Tits',
                     productName: 'Tits',
                     genericName: 'Test Intelligence & Tutoring System',
                     description: 'TITS - Test Intelligence & Tutoring System. Open-source BYOK exam assistant and tutor.',
@@ -71,6 +72,7 @@ module.exports = {
             config: {
                 options: {
                     name: 'tits',
+                    bin: 'Tits',
                     productName: 'Tits',
                     genericName: 'Test Intelligence & Tutoring System',
                     description: 'TITS - Test Intelligence & Tutoring System. Open-source BYOK exam assistant and tutor.',

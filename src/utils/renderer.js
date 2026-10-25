@@ -1111,10 +1111,70 @@ const tits = {
     playStealthBeeps,
     triggerScreenPulse,
 
+    // Window controls
+    toggleVisibility: () => ipcRenderer.invoke('toggle-window-visibility'),
+    toggleClickThrough: () => ipcRenderer.invoke('toggle-click-through'),
+
+    // Global action dispatcher for shortcuts
+    handleShortcut(key) {
+        const app = getApp();
+        if (!app) return;
+        const normalized = (key || '').toLowerCase();
+        if (normalized.includes('enter')) {
+            if (app.currentView === 'exam-solver') {
+                const solver = app.shadowRoot?.querySelector('exam-solver-view');
+                if (solver && typeof solver.triggerSolve === 'function') {
+                    solver.triggerSolve();
+                }
+            } else if (app.currentView === 'main') {
+                const main = app.shadowRoot?.querySelector('main-view');
+                if (main && typeof main.handleStartClick === 'function') {
+                    main.handleStartClick();
+                }
+            }
+        }
+    },
+
     // Platform detection
     isLinux: isLinux,
     isMacOS: isMacOS,
 };
+
+// In-window keyboard shortcuts listener (ensures shortcuts fire even when window has input focus)
+window.addEventListener('keydown', e => {
+    // Avoid triggering when user is typing in a text input or textarea
+    const target = e.composedPath ? e.composedPath()[0] : e.target;
+    const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+    const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+
+    // Quick Exam Solve (Ctrl+Alt+Q)
+    if (isCtrlOrCmd && e.altKey && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        tits.solveExam();
+        return;
+    }
+
+    // Toggle Stealth Visibility (Ctrl+\)
+    if (isCtrlOrCmd && e.key === '\\') {
+        e.preventDefault();
+        tits.toggleVisibility();
+        return;
+    }
+
+    // Next Step / Solve (Ctrl+Enter)
+    if (isCtrlOrCmd && e.key === 'Enter' && !isInput) {
+        e.preventDefault();
+        tits.handleShortcut('ctrl+enter');
+        return;
+    }
+
+    // Toggle Click Through (Ctrl+M)
+    if (isCtrlOrCmd && (e.key === 'm' || e.key === 'M') && !e.altKey && !e.shiftKey && !isInput) {
+        e.preventDefault();
+        tits.toggleClickThrough();
+        return;
+    }
+});
 
 // Stealth Audio Beeps (1 beep = A, 2 = B, 3 = C, 4 = D, 5 = E)
 function playStealthBeeps(count = 1) {

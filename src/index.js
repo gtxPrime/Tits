@@ -3,6 +3,9 @@ if (require('electron-squirrel-startup')) {
 }
 
 const { app, BrowserWindow, shell, ipcMain } = require('electron');
+
+// Enable DevTools remote debugging port for diagnostic inspection
+app.commandLine.appendSwitch('remote-debugging-port', '9222');
 const { createWindow, updateGlobalShortcuts } = require('./utils/window');
 const { setupGeminiIpcHandlers, stopMacOSAudioCapture, sendToRenderer } = require('./utils/gemini');
 const { initTray, setTrayAnswer, destroyTray } = require('./utils/tray');
@@ -38,10 +41,26 @@ app.whenReady().then(async () => {
         });
     }
 
-    setupGeminiIpcHandlers(geminiSessionRef);
-    setupStorageIpcHandlers();
-    setupGeneralIpcHandlers();
-    setupExamIpcHandlers();
+    try {
+        setupGeminiIpcHandlers(geminiSessionRef);
+    } catch (e) {
+        console.error('Failed to setup Gemini IPC handlers:', e);
+    }
+    try {
+        setupStorageIpcHandlers();
+    } catch (e) {
+        console.error('Failed to setup Storage IPC handlers:', e);
+    }
+    try {
+        setupGeneralIpcHandlers();
+    } catch (e) {
+        console.error('Failed to setup General IPC handlers:', e);
+    }
+    try {
+        setupExamIpcHandlers();
+    } catch (e) {
+        console.error('Failed to setup Exam IPC handlers:', e);
+    }
 });
 
 app.on('window-all-closed', () => {
@@ -302,12 +321,13 @@ function setupGeneralIpcHandlers() {
         }
     });
 
-    ipcMain.on('update-keybinds', (event, newKeybinds) => {
-        if (mainWindow) {
-            // Also save to storage
-            storage.setKeybinds(newKeybinds);
-            updateGlobalShortcuts(newKeybinds, mainWindow, sendToRenderer, geminiSessionRef);
-        }
+    ipcMain.handle('toggle-click-through', () => {
+        if (!mainWindow || mainWindow.isDestroyed()) return { success: false };
+        // Toggle click through
+        const isIgnored = mainWindow.isIgnoreMouseEvents ? !mainWindow.isIgnoreMouseEvents() : true;
+        mainWindow.setIgnoreMouseEvents(isIgnored, { forward: true });
+        mainWindow.webContents.send('click-through-toggled', isIgnored);
+        return { success: true, isClickThrough: isIgnored };
     });
 
     // Debug logging from renderer

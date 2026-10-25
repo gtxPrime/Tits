@@ -99,6 +99,7 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
             const modelsToTry = [primaryModel, 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-3.8-flash'];
             const tried = new Set();
             let result = null;
+            let lastError = '';
 
             for (const m of modelsToTry) {
                 if (tried.has(m)) continue;
@@ -120,11 +121,21 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
                     if (result && result.text) break;
                 } catch (err) {
                     console.warn(`[ExamSolver] Model ${m} failed:`, err.message);
+                    lastError = err.message || '';
                 }
             }
 
             if (!result || !result.text) {
-                throw new Error('All Gemini vision models failed. Check your API key or network.');
+                let userFriendlyErr = 'All Gemini vision models failed. Check your API key or network.';
+                if (lastError && (lastError.includes('reported as leaked') || lastError.includes('PERMISSION_DENIED'))) {
+                    userFriendlyErr =
+                        'Google rejected this API key (reported as leaked). Please generate a fresh API key at aistudio.google.com and save it in Settings (BYOK).';
+                } else if (lastError && lastError.includes('API key not valid')) {
+                    userFriendlyErr = 'Invalid Gemini API key. Please verify your key at aistudio.google.com and paste it in Settings (BYOK).';
+                } else if (lastError) {
+                    userFriendlyErr = `Gemini API Error: ${lastError.slice(0, 150)}`;
+                }
+                throw new Error(userFriendlyErr);
             }
 
             rawResponseText = result.text || '';

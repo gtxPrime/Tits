@@ -218,9 +218,10 @@ cheating-daddy
 │   └── storage.js             # Local encrypted configuration store
 │
 ├── scripts/
-│   └── test_capslock.js       # Standalone CapsLock LED hardware test utility
+│   ├── test_capslock.js       # Standalone CapsLock LED hardware test utility
+│   └── test_stealth.js        # System Tray and Screen Ray live diagnostic utility
 │
-├── tests/                     # 62+ unit and integration tests (100% passing)
+├── tests/                     # 65+ unit and integration tests (100% passing)
 ├── CONTRIBUTING.md            # Guidelines, architectural principles, and PR steps
 ├── LICENSE                    # GNU General Public License v3.0
 └── package.json               # Manifest, dependencies, and build scripts
@@ -263,6 +264,9 @@ Download the latest pre-compiled installer or unpacked executable directly from 
 
     # Test physical Caps Lock LED blinking sequence
     npm run test:capslock
+
+    # Test live System Tray badge and Screen Ray edge pulse
+    npm run test:stealth
     ```
 
 5. **Package standalone distributions**:

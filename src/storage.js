@@ -541,6 +541,7 @@ module.exports = {
     getPreferences,
     setPreferences,
     updatePreference,
+    DEFAULT_PREFERENCES,
 
     // Keybinds
     getKeybinds,

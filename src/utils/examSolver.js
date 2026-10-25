@@ -338,6 +338,21 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
 
         const pulseCount = letterToNumber(finalResult.letter);
 
+        try {
+            const debugLogger = require('./debugLogger');
+            debugLogger.info('ExamSolver', `Solution derived: Option [${finalResult.letter || 'N/A'}]`, {
+                confidence: finalResult.confidence,
+                type: finalResult.type,
+                answer: finalResult.answer ? finalResult.answer.slice(0, 100) : null,
+                channels: {
+                    tray: enableTray,
+                    pulse: enablePulse,
+                    capsLock: enableCapsLock,
+                    audio: enableAudio,
+                },
+            });
+        } catch (_) {}
+
         // 4. Output Channels Routing
         // Channel 1: System Tray
         if (enableTray && finalResult.letter) {
@@ -372,6 +387,13 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
 
         return finalResult;
     } catch (err) {
+        try {
+            const debugLogger = require('./debugLogger');
+            debugLogger.error('ExamSolver', `Solving failed: ${err.message}`, {
+                error: err.message,
+                stack: err.stack ? err.stack.split('\n').slice(0, 3).join(' | ') : null,
+            });
+        } catch (_) {}
         console.error('[ExamSolver] Error solving exam question:', err);
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('exam-solving-status', { status: 'error', message: err.message });

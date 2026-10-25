@@ -3,6 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const { createLetterBitmap, createLetterPngBuffer } = require('./bmpBadge');
 
+const debugLogger = require('./debugLogger');
+
 let tray = null;
 let currentAnswerLetter = null;
 let mainWindowRef = null;
@@ -41,6 +43,9 @@ function createTrayIconDataUrl(letter = null) {
 function updateTrayMenu() {
     if (!tray) return;
 
+    const isMac = process.platform === 'darwin';
+    const solveShortcutText = isMac ? 'Alt+Cmd+Q' : 'Ctrl+Alt+Q';
+
     const contextMenu = Menu.buildFromTemplate([
         {
             label: currentAnswerLetter ? `Last Answer: Option [${currentAnswerLetter}]` : 'Tits - Test Intelligence & Tutoring System',
@@ -48,7 +53,7 @@ function updateTrayMenu() {
         },
         { type: 'separator' },
         {
-            label: 'Quick Exam Solve (Ctrl+Alt+Q)',
+            label: `Quick Exam Solve (${solveShortcutText})`,
             click: () => {
                 if (onSolveCallback) onSolveCallback();
             },
@@ -194,6 +199,19 @@ function setTrayAnswer(letter, summary = '') {
             global.__last_tray_image = icon;
             tray.setImage(icon);
 
+            // On macOS, set title in status menu bar for immediate visibility
+            if (process.platform === 'darwin') {
+                try {
+                    if (currentAnswerLetter) {
+                        tray.setTitle(` [${currentAnswerLetter}]`);
+                    } else {
+                        tray.setTitle('');
+                    }
+                } catch (macTitleErr) {
+                    debugLogger.warn('Tray', 'Failed to set macOS tray title', macTitleErr.message);
+                }
+            }
+
             if (currentAnswerLetter) {
                 const tip = `[Tits] Option [${currentAnswerLetter}] ${summary ? ': ' + summary.slice(0, 80) : ''}`;
                 tray.setToolTip(tip);
@@ -202,8 +220,14 @@ function setTrayAnswer(letter, summary = '') {
             }
 
             updateTrayMenu();
+            debugLogger.info('Tray', 'Updated tray answer status', {
+                letter: currentAnswerLetter,
+                platform: process.platform,
+                summary: summary ? summary.slice(0, 50) : null,
+            });
         } catch (err) {
             console.error('[Tray] Error updating tray answer:', err);
+            debugLogger.error('Tray', 'Failed to update tray answer', err.message);
         }
     }
 }

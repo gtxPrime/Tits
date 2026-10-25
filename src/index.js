@@ -12,6 +12,7 @@ const { initTray, setTrayAnswer, destroyTray } = require('./utils/tray');
 const { startClickHoldMonitor, stopClickHoldMonitor } = require('./utils/mouseTrigger');
 const { solveCurrentExamQuestion } = require('./utils/examSolver');
 const storage = require('./storage');
+const debugLogger = require('./utils/debugLogger');
 
 const geminiSessionRef = { current: null };
 let mainWindow = null;
@@ -24,6 +25,13 @@ function createMainWindow() {
 app.whenReady().then(async () => {
     // Initialize storage (checks version, resets if needed)
     storage.initializeStorage();
+
+    try {
+        debugLogger.init();
+        debugLogger.info('App', 'TITS initialized and storage verified', { platform: process.platform, version: app.getVersion() });
+    } catch (e) {
+        console.error('Failed to initialize debug logger:', e);
+    }
 
     // Trigger screen recording permission prompt on macOS if not already granted
     if (process.platform === 'darwin') {
@@ -59,6 +67,11 @@ app.whenReady().then(async () => {
         setupExamIpcHandlers();
     } catch (e) {
         console.error('Failed to setup Exam IPC handlers:', e);
+    }
+    try {
+        setupLogsIpcHandlers();
+    } catch (e) {
+        console.error('Failed to setup Logs IPC handlers:', e);
     }
 });
 
@@ -365,6 +378,59 @@ function setupGeneralIpcHandlers() {
     // Debug logging from renderer
     ipcMain.on('log-message', (event, msg) => {
         console.log(msg);
+        try {
+            debugLogger.info('Renderer', typeof msg === 'string' ? msg : JSON.stringify(msg));
+        } catch (e) {}
+    });
+}
+
+function setupLogsIpcHandlers() {
+    ipcMain.handle('logs:get-content', async () => {
+        try {
+            return { success: true, content: debugLogger.getLogContent(), path: debugLogger.getLogPath() };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('logs:get-path', async () => {
+        try {
+            return { success: true, path: debugLogger.getLogPath() };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('logs:copy-clipboard', async () => {
+        try {
+            return debugLogger.copyLogsToClipboard();
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('logs:open-folder', async () => {
+        try {
+            return debugLogger.openLogInFolder();
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('logs:export', async () => {
+        try {
+            return await debugLogger.exportLogs(mainWindow);
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('logs:clear', async () => {
+        try {
+            return debugLogger.clearLogs();
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
     });
 }
 

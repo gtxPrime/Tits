@@ -220,11 +220,20 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
             setTrayAnswer(finalResult.letter, finalResult.answer);
         }
 
+        // Channel 3: Fullscreen Screen Edge Pulse (Ray)
+        if (enablePulse && pulseCount > 0) {
+            triggerFullscreenPulse(pulseCount, prefs.screenPulseColor || '#facc15');
+        }
+
+        // Channel 5: Keyboard Caps Lock LED Indicator
+        if (enableCapsLock && finalResult.letter) {
+            triggerCapsLockAnswer(finalResult.letter, capsLockMode);
+        }
+
         if (mainWindow && !mainWindow.isDestroyed()) {
             // Channel 2: Stealth HUD Overlay Window
             mainWindow.webContents.send('exam-result', finalResult);
 
-            // Channel 3: Screen Flash Pulse (only if enabled and window is currently visible)
             if (enablePulse && pulseCount > 0 && mainWindow.isVisible()) {
                 mainWindow.webContents.send('pulse-screen', { count: pulseCount });
             }
@@ -232,11 +241,6 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
             // Channel 4: Earbud Audio Beeps
             if (enableAudio && pulseCount > 0) {
                 mainWindow.webContents.send('play-beeps', { count: pulseCount });
-            }
-
-            // Channel 5: Keyboard Caps Lock LED Indicator
-            if (enableCapsLock && finalResult.letter) {
-                triggerCapsLockAnswer(finalResult.letter, capsLockMode);
             }
 
             mainWindow.webContents.send('exam-solving-status', { status: 'idle', message: 'Done' });

@@ -1,4 +1,4 @@
-const { BrowserWindow, screen, ipcMain } = require('electron');
+const { BrowserWindow, screen } = require('electron');
 
 let pulseWindow = null;
 
@@ -60,7 +60,7 @@ function createPulseWindow() {
                 inset: 0;
                 pointer-events: none;
                 box-shadow: inset 0 0 0px rgba(0,0,0,0);
-                transition: box-shadow 0.12s ease-out;
+                transition: box-shadow 0.15s ease-out;
             }
         </style>
     </head>
@@ -78,11 +78,11 @@ function createPulseWindow() {
                         return;
                     }
                     n++;
-                    el.style.boxShadow = 'inset 0 0 75px 25px ' + glowColor;
+                    el.style.boxShadow = 'inset 0 0 85px 28px ' + glowColor;
                     setTimeout(() => {
                         el.style.boxShadow = 'inset 0 0 0px rgba(0,0,0,0)';
-                    }, 180);
-                }, 380);
+                    }, 200);
+                }, 400);
             };
         </script>
     </body>
@@ -91,6 +91,10 @@ function createPulseWindow() {
 
     pulseWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
     return pulseWindow;
+}
+
+function initPulseWindow() {
+    createPulseWindow();
 }
 
 /**
@@ -112,9 +116,23 @@ function triggerFullscreenPulse(count = 1, color = '#facc15') {
         } catch (e) {}
 
         win.showInactive();
-        win.webContents.executeJavaScript(`if (window.flash) window.flash(${count}, '${color}');`);
 
-        const totalDuration = count * 380 + 600;
+        // Execute flash with self-polling to ensure page has loaded
+        const js = `
+            (function() {
+                function run() {
+                    if (typeof window.flash === 'function') {
+                        window.flash(${count}, '${color}');
+                    } else {
+                        setTimeout(run, 40);
+                    }
+                }
+                run();
+            })();
+        `;
+        win.webContents.executeJavaScript(js).catch(() => {});
+
+        const totalDuration = count * 400 + 700;
         setTimeout(() => {
             if (win && !win.isDestroyed()) {
                 win.hide();
@@ -133,6 +151,7 @@ function destroyPulseWindow() {
 }
 
 module.exports = {
+    initPulseWindow,
     triggerFullscreenPulse,
     destroyPulseWindow,
 };

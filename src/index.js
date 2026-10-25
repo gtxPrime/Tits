@@ -33,6 +33,12 @@ app.whenReady().then(async () => {
 
     createMainWindow();
     initTray(mainWindow, () => solveCurrentExamQuestion(mainWindow));
+    try {
+        const { initPulseWindow } = require('./utils/screenPulse');
+        initPulseWindow();
+    } catch (e) {
+        console.warn('Failed to pre-initialize screen pulse window:', e);
+    }
 
     try {
         setupGeminiIpcHandlers(geminiSessionRef);

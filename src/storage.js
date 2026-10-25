@@ -61,8 +61,107 @@ const DEFAULT_PREFERENCES = {
 
 const DEFAULT_KEYBINDS = null; // null means use system defaults
 
+const MODEL_CATALOG = {
+    'gemini-flash-latest': {
+        id: 'gemini-flash-latest',
+        name: 'Gemini Flash (Latest)',
+        provider: 'Google Gemini',
+        dailyLimit: 250,
+        speedRating: 5,
+        reasoningRating: 4,
+        speedLabel: 'Ultra-Fast (~1.2s)',
+        badge: 'Recommended',
+        tagline: 'Best all-rounder: ultra-fast responses, high accuracy, and 250 RPD quota',
+        comparison: 'Faster than Pro models, with 12x higher free quota than 2.5-flash (250 vs 20 RPD). Ideal for standard exams.',
+    },
+    'gemini-3.5-flash': {
+        id: 'gemini-3.5-flash',
+        name: 'Gemini 3.5 Flash',
+        provider: 'Google Gemini',
+        dailyLimit: 250,
+        speedRating: 5,
+        reasoningRating: 4.5,
+        speedLabel: 'Very Fast (~1.4s)',
+        badge: 'Smarter & Fast',
+        tagline: 'Next-gen vision model with enhanced multimodal reasoning and OCR',
+        comparison: 'Higher reasoning power than standard Flash with comparable speed and generous 250 RPD quota.',
+    },
+    'gemini-flash-lite-latest': {
+        id: 'gemini-flash-lite-latest',
+        name: 'Gemini Flash-Lite (Latest)',
+        provider: 'Google Gemini',
+        dailyLimit: 500,
+        speedRating: 5,
+        reasoningRating: 3.5,
+        speedLabel: 'Blazing Fast (~0.9s)',
+        badge: 'Highest Free Quota',
+        tagline: 'Maximum throughput with 500 requests per day for high-volume tests',
+        comparison: 'Fastest of all Gemini models with double the daily quota of Flash. Best for rapid-fire MCQs.',
+    },
+    'gemini-2.5-flash': {
+        id: 'gemini-2.5-flash',
+        name: 'Gemini 2.5 Flash',
+        provider: 'Google Gemini',
+        dailyLimit: 20,
+        speedRating: 4.5,
+        reasoningRating: 4.5,
+        speedLabel: 'Fast (~1.5s)',
+        badge: 'High Precision',
+        tagline: 'Balanced reasoning and speed (Note: Free Tier has a strict 20 RPD limit)',
+        comparison: 'Strong STEM performance, but limited to 20 free requests/day. Best if you have a paid Google Cloud key.',
+    },
+    'gemini-2.5-pro': {
+        id: 'gemini-2.5-pro',
+        name: 'Gemini 2.5 Pro',
+        provider: 'Google Gemini',
+        dailyLimit: 20,
+        speedRating: 3,
+        reasoningRating: 5,
+        speedLabel: 'Moderate (~3.5s)',
+        badge: 'Best Reasoning',
+        tagline: 'State-of-the-art problem solving for complex math, engineering, and logic',
+        comparison: 'Slower than Flash, but provides deepest multi-step deduction for difficult questions.',
+    },
+    'gemini-3.1-pro-preview': {
+        id: 'gemini-3.1-pro-preview',
+        name: 'Gemini 3.1 Pro Preview',
+        provider: 'Google Gemini',
+        dailyLimit: 20,
+        speedRating: 2.5,
+        reasoningRating: 5,
+        speedLabel: 'Thorough (~4.5s)',
+        badge: 'Elite Analysis',
+        tagline: 'Google cutting-edge reasoning model for university-level and tricky questions',
+        comparison: 'Maximum accuracy on nuanced diagrams and multi-part questions at the expense of speed.',
+    },
+    'llama-3.2-11b-vision-preview': {
+        id: 'llama-3.2-11b-vision-preview',
+        name: 'Groq Llama 3.2 11B Vision',
+        provider: 'Groq LPUs',
+        dailyLimit: 7000,
+        speedRating: 5,
+        reasoningRating: 3.5,
+        speedLabel: 'Ultra-Fast LPU (~0.8s)',
+        badge: 'Massive Quota (7k/day)',
+        tagline: 'Open-weights vision model accelerated on Groq LPUs with 7,000 requests/day',
+        comparison: 'Blazing fast inference speed and virtually unlimited daily quota for all-day test sessions.',
+    },
+    'llama-3.2-90b-vision-preview': {
+        id: 'llama-3.2-90b-vision-preview',
+        name: 'Groq Llama 3.2 90B Vision',
+        provider: 'Groq LPUs',
+        dailyLimit: 3500,
+        speedRating: 4,
+        reasoningRating: 4.5,
+        speedLabel: 'Fast LPU (~1.8s)',
+        badge: 'High Accuracy Open-Source',
+        tagline: '90B parameter flagship open vision model on Groq hardware',
+        comparison: 'Dramatically more accurate than 11B on intricate questions while maintaining a huge 3,500 RPD quota.',
+    },
+};
+
 const DEFAULT_LIMITS = {
-    data: [], // Array of { date: 'YYYY-MM-DD', flash: { count }, flashLite: { count }, groq: { 'qwen3-32b': { chars, limit }, 'gpt-oss-120b': { chars, limit }, 'gpt-oss-20b': { chars, limit } }, gemini: { 'gemma-4-26b-a4b-it': { chars } } }
+    data: [], // Array of { date: 'YYYY-MM-DD', models: {}, flash: { count }, flashLite: { count } }
 };
 
 // Get the config directory path based on OS
@@ -302,10 +401,12 @@ function getTodayLimits() {
     const today = getTodayDateString();
 
     // Find today's entry
-    const todayEntry = limits.data.find(entry => entry.date === today);
+    let todayEntry = limits.data.find(entry => entry.date === today);
 
     if (todayEntry) {
-        // ensure new fields exist
+        if (!todayEntry.models) {
+            todayEntry.models = {};
+        }
         if (!todayEntry.groq) {
             todayEntry.groq = {
                 'qwen3-32b': { chars: 0, limit: 1500000 },
@@ -327,6 +428,7 @@ function getTodayLimits() {
     limits.data = limits.data.filter(entry => entry.date === today);
     const newEntry = {
         date: today,
+        models: {},
         flash: { count: 0 },
         flashLite: { count: 0 },
         groq: {
@@ -357,6 +459,7 @@ function incrementLimitCount(model) {
         limits.data = [];
         todayEntry = {
             date: today,
+            models: {},
             flash: { count: 0 },
             flashLite: { count: 0 },
         };
@@ -364,17 +467,75 @@ function incrementLimitCount(model) {
     } else {
         // Clean old entries, keep only today
         limits.data = limits.data.filter(entry => entry.date === today);
+        if (!todayEntry.models) {
+            todayEntry.models = {};
+        }
     }
 
-    // Increment the appropriate model count
-    if (model === 'gemini-2.5-flash') {
-        todayEntry.flash.count++;
-    } else if (model === 'gemini-2.5-flash-lite') {
-        todayEntry.flashLite.count++;
+    if (model) {
+        todayEntry.models[model] = (todayEntry.models[model] || 0) + 1;
+
+        // Increment legacy counters for backward compatibility
+        if (model === 'gemini-2.5-flash' || model === 'gemini-flash-latest') {
+            todayEntry.flash = todayEntry.flash || { count: 0 };
+            todayEntry.flash.count++;
+        } else if (model === 'gemini-2.5-flash-lite' || model === 'gemini-flash-lite-latest') {
+            todayEntry.flashLite = todayEntry.flashLite || { count: 0 };
+            todayEntry.flashLite.count++;
+        }
     }
 
     setLimits(limits);
     return todayEntry;
+}
+
+function getModelUsage(modelName) {
+    const todayLimits = getTodayLimits();
+    const catalog = MODEL_CATALOG[modelName] || {
+        id: modelName,
+        name: modelName,
+        provider: modelName?.startsWith('llama') ? 'Groq LPUs' : 'Google Gemini',
+        dailyLimit: 250,
+        speedRating: 4,
+        reasoningRating: 4,
+        speedLabel: 'Fast',
+        badge: 'Custom',
+        tagline: 'Custom Model Option',
+        comparison: 'Standard model configuration',
+    };
+
+    let usedToday = 0;
+    if (todayLimits.models && typeof todayLimits.models[modelName] === 'number') {
+        usedToday = todayLimits.models[modelName];
+    } else if (modelName === 'gemini-2.5-flash' && todayLimits.flash) {
+        usedToday = todayLimits.flash.count || 0;
+    } else if (modelName === 'gemini-2.5-flash-lite' && todayLimits.flashLite) {
+        usedToday = todayLimits.flashLite.count || 0;
+    }
+
+    const dailyLimit = catalog.dailyLimit || 250;
+    const remaining = Math.max(0, dailyLimit - usedToday);
+    const percentUsed = Math.min(100, Math.round((usedToday / dailyLimit) * 100));
+    const percentRemaining = Math.max(0, 100 - percentUsed);
+
+    return {
+        model: modelName,
+        meta: catalog,
+        usedToday,
+        dailyLimit,
+        remaining,
+        percentUsed,
+        percentRemaining,
+        status: remaining === 0 ? 'depleted' : remaining <= Math.round(dailyLimit * 0.2) ? 'low' : 'good',
+    };
+}
+
+function getAllModelUsages() {
+    const result = {};
+    for (const key of Object.keys(MODEL_CATALOG)) {
+        result[key] = getModelUsage(key);
+    }
+    return result;
 }
 
 function incrementCharUsage(provider, model, charCount) {
@@ -568,6 +729,9 @@ module.exports = {
     getAvailableModel,
     incrementCharUsage,
     getModelForToday,
+    MODEL_CATALOG,
+    getModelUsage,
+    getAllModelUsages,
 
     // History
     saveSession,

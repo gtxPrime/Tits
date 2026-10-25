@@ -10,7 +10,8 @@
         "make": "electron-forge make",
         "publish": "electron-forge publish",
         "lint": "echo \"No linting configured\"",
-        "test": "node --test tests/**/*.test.js"
+        "test": "node --test tests/**/*.test.js",
+        "test:capslock": "node scripts/test_capslock.js"
     },
     "repository": {
         "type": "git",

@@ -68,6 +68,7 @@ TITS offers distinct capture pipelines and stealth feedback mechanisms tailored 
 | **DXGI / BitBlt / Graphics.Capture Hooks**              |    Pixels captured into video stream buffer    |     **Compositor Passthrough** (renders underlying desktop)      |
 | **Screen Edge Indicator**                               |      Can leak on shared display if active      |      **Suppressed in Hidden State** (Zero visual footprint)      |
 | **Taskbar / Notification Area Indicator**               |           Tray icons usually visible           | **Transparent Idle Mode** (100% invisible transparent tray icon) |
+| **Keyboard Hardware LED Indicator**                     |      Not supported by recording software       |   **Physical Caps Lock Blinks** (100% off-screen, zero pixels)   |
 | **Audio Feedback**                                      |   System audio stream could be heard on call   |   **Earbud Sine Tones** (discreet frequencies, zero mic leak)    |
 | **Inference Privacy**                                   | Cloud subscription relay with stored telemetry |  **100% BYOK & Local Storage** (Zero telemetry, direct TLS 1.3)  |
 | **Cost & Token Limits**                                 |     Monthly subscriptions & locked tokens      |    **Free Tier AI Studio / Groq** (Unlimited private queries)    |
@@ -125,7 +126,7 @@ SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
 - <img src="https://api.iconify.design/fa6-solid/window-maximize.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/window-maximize.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Capture-Excluded Floating HUD:** A frameless, dark-mode overlay displaying the detected answer, confidence level, and step-by-step reasoning, completely invisible to screen shares.
 - <img src="https://api.iconify.design/fa6-solid/border-all.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/border-all.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Screen Edge Pulse:** The perimeter of your monitor emits subtle visual blinks corresponding to the option letter (1 blink = A, 2 blinks = B, 3 = C, 4 = D, 5 = E).
 - <img src="https://api.iconify.design/fa6-solid/headphones.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/headphones.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Earbud Audio Cues:** Discreet, low-amplitude sine wave frequencies delivered directly to headphones (1 tone = A, 2 tones = B), completely inaudible to room microphones.
-- <img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Caps Lock Light (Hardware Stealth):** Blinks or toggles your physical keyboard Caps Lock LED indicator for the answer (1 blink = A, 2 = B, 3 = C, 4 = D). Completely off-screen and 100% invisible to all screen recorders, video calls, or proctoring software.
+- <img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Caps Lock Light (Hardware Stealth):** Blinks or toggles your physical keyboard Caps Lock LED indicator for the answer (1 blink = A, 2 = B, 3 = C, 4 = D). Completely off-screen and 100% invisible to all screen recorders, video calls, or proctoring software. Test anytime with `npm run test:capslock`.
 
 ---
 
@@ -216,6 +217,9 @@ cheating-daddy
 │   ├── preload.js             # Context-isolated secure IPC bridge
 │   └── storage.js             # Local encrypted configuration store
 │
+├── scripts/
+│   └── test_capslock.js       # Standalone CapsLock LED hardware test utility
+│
 ├── tests/                     # 62+ unit and integration tests (100% passing)
 ├── CONTRIBUTING.md            # Guidelines, architectural principles, and PR steps
 ├── LICENSE                    # GNU General Public License v3.0
@@ -251,7 +255,17 @@ Download the latest pre-compiled installer or unpacked executable directly from 
     npm start
     ```
 
-4. **Package standalone distributions**:
+4. **Run hardware & unit tests**:
+
+    ```bash
+    # Execute full test suite
+    npm test
+
+    # Test physical Caps Lock LED blinking sequence
+    npm run test:capslock
+    ```
+
+5. **Package standalone distributions**:
     ```bash
     # Build unpacked local binary
     npm run package
@@ -269,6 +283,7 @@ Compiled distributions will be located under `out/make/`.
 - [x] **Native DWM Invisibility:** Bypass screen shares across Zoom, Teams, Meet, and Discord with `WDA_EXCLUDEFROMCAPTURE`.
 - [x] **Cursor-Targeted Smart Cropping:** Instant localized screen bounds detection with HiDPI support.
 - [x] **Multi-Channel Stealth Outputs:** Dynamic tray badge numbers/letters, edge blink pulse, earbud tones, and invisible idle tray mode.
+- [x] **Keyboard Hardware LED Indicator:** Pulse Caps Lock LED for option answers (1=A, 2=B, 3=C, 4=D) with zero screen footprint.
 - [x] **Bring Your Own Key (BYOK):** Zero subscription, client-side direct inference with Google Gemini and Groq.
 - [x] **Multi-Language Dictionaries:** Integrated translation system with English, Spanish, Chinese, and Hindi.
 - [ ] <img src="https://api.iconify.design/fa6-solid/shield-halved.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/shield-halved.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Kernel-Level Input Guard [Coming Soon]:** Low-level driver-level hook suppression for environments running aggressive ring-0 proctoring engines.

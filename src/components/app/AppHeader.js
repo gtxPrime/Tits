@@ -161,7 +161,7 @@ export class AppHeader extends LitElement {
     async _checkForUpdates() {
         try {
             const currentVersion = await tits.getVersion();
-            const response = await fetch('https://raw.githubusercontent.com/gtxPrime/Tits/refs/heads/master/package.json');
+            const response = await fetch('https://raw.githubusercontent.com/gtxPrime/Tits/refs/heads/main/package.json');
             if (!response.ok) return;
 
             const remotePackage = await response.json();

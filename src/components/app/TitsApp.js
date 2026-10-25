@@ -595,7 +595,7 @@ export class TitsApp extends LitElement {
             this._localVersion = await tits.getVersion();
             this.requestUpdate();
 
-            const res = await fetch('https://raw.githubusercontent.com/gtxPrime/Tits/refs/heads/master/package.json');
+            const res = await fetch('https://raw.githubusercontent.com/gtxPrime/Tits/refs/heads/main/package.json');
             if (!res.ok) return;
             const remote = await res.json();
             const remoteVersion = remote.version;

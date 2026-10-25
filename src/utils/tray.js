@@ -80,18 +80,26 @@ function updateTrayMenu() {
     tray.setContextMenu(contextMenu);
 }
 
-const { createLetterBitmap } = require('./bmpBadge');
+const { createLetterBitmap, createLetterPngBuffer } = require('./bmpBadge');
 
 function getTrayIcon(letter = null) {
     if (letter && /[A-Z0-9]/i.test(letter.toString().trim())) {
         try {
             const char = letter.toString().trim().toUpperCase()[0];
+            const pngBuf = createLetterPngBuffer(char);
+            const img = nativeImage.createFromBuffer(pngBuf);
+            if (!img.isEmpty()) return img;
+        } catch (e) {
+            console.warn('[Tray] Error creating letter badge from PNG:', e);
+        }
+
+        // Fallback to raw bitmap if PNG fails
+        try {
+            const char = letter.toString().trim().toUpperCase()[0];
             const rawBitmap = createLetterBitmap(char);
             const img = nativeImage.createFromBitmap(rawBitmap, { width: 32, height: 32 });
             if (!img.isEmpty()) return img;
-        } catch (e) {
-            console.warn('[Tray] Error creating letter badge from bitmap:', e);
-        }
+        } catch (e) {}
     }
 
     const iconPath = process.platform === 'win32' ? path.join(__dirname, '../assets/logo.ico') : path.join(__dirname, '../assets/logo.png');
@@ -132,22 +140,56 @@ function initTray(mainWindow, onSolve) {
 
 function setTrayAnswer(letter, summary = '') {
     currentAnswerLetter = letter ? letter.toUpperCase() : null;
-    if (!tray) return;
+    const icon = getTrayIcon(currentAnswerLetter);
 
-    try {
-        const icon = getTrayIcon(currentAnswerLetter);
-        tray.setImage(icon);
+    // 1. Update System Tray Icon & Tooltip
+    if (tray) {
+        try {
+            tray.setImage(icon);
 
-        if (currentAnswerLetter) {
-            const tip = `[TITS] Answer: [${currentAnswerLetter}] ${summary ? '— ' + summary.slice(0, 80) : ''}`;
-            tray.setToolTip(tip);
-        } else {
-            tray.setToolTip('TITS - Test Intelligence & Tutoring System (BYOK)');
+            if (currentAnswerLetter) {
+                const tip = `[TITS] Option [${currentAnswerLetter}] ${summary ? '— ' + summary.slice(0, 80) : ''}`;
+                tray.setToolTip(tip);
+            } else {
+                tray.setToolTip('TITS - Test Intelligence & Tutoring System (BYOK)');
+            }
+
+            updateTrayMenu();
+        } catch (err) {
+            console.error('[Tray] Error updating tray answer:', err);
         }
+    }
 
-        updateTrayMenu();
-    } catch (err) {
-        console.error('[Tray] Error updating tray answer:', err);
+    // 2. Update Windows Taskbar Window (Icon, Overlay Badge, Title, and Thumbnail Tooltip)
+    if (mainWindowRef && !mainWindowRef.isDestroyed()) {
+        try {
+            if (currentAnswerLetter) {
+                // A. Window Title visible in Taskbar button / preview
+                mainWindowRef.setTitle(`[Option ${currentAnswerLetter}] ${summary ? summary.slice(0, 60) : 'Solved'} — TITS`);
+
+                // B. Taskbar App Icon
+                mainWindowRef.setIcon(icon);
+
+                // C. Windows Taskbar Overlay Badge (shows letter badge on taskbar button)
+                if (process.platform === 'win32') {
+                    mainWindowRef.setOverlayIcon(icon, `Option ${currentAnswerLetter}`);
+                    mainWindowRef.setThumbnailToolTip(`Option [${currentAnswerLetter}]: ${summary || ''}`);
+                }
+
+                // D. Flash Taskbar Button so user spots the answer immediately
+                mainWindowRef.flashFrame(true);
+            } else {
+                mainWindowRef.setTitle('TITS - Test Intelligence & Tutoring System');
+                const defaultIcon = getTrayIcon(null);
+                mainWindowRef.setIcon(defaultIcon);
+                if (process.platform === 'win32') {
+                    mainWindowRef.setOverlayIcon(null, '');
+                    mainWindowRef.setThumbnailToolTip('TITS - Test Intelligence & Tutoring System');
+                }
+            }
+        } catch (err) {
+            console.error('[Tray] Error updating taskbar window:', err);
+        }
     }
 }
 
@@ -163,4 +205,5 @@ module.exports = {
     setTrayAnswer,
     destroyTray,
     createTrayIconDataUrl,
+    getTrayIcon,
 };

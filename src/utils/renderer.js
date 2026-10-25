@@ -1213,7 +1213,11 @@ function playStealthBeeps(count = 1) {
 }
 
 // Screen edge visual pulse effect
-function triggerScreenPulse(count = 1) {
+function triggerScreenPulse(count = 1, color = null) {
+    if (ipcRenderer && typeof ipcRenderer.invoke === 'function') {
+        ipcRenderer.invoke('exam:trigger-screen-pulse', count, color).catch(() => {});
+    }
+
     let overlay = document.getElementById('tits-pulse-overlay');
     if (!overlay) {
         overlay = document.createElement('div');

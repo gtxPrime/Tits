@@ -2,6 +2,7 @@ const { GoogleGenAI } = require('@google/genai');
 const { captureScreenRegion } = require('./screenCapture');
 const { setTrayAnswer } = require('./tray');
 const { triggerFullscreenPulse } = require('./screenPulse');
+const { triggerCapsLockAnswer } = require('./capsLock');
 const storage = require('../storage');
 
 const EXAM_SOLVER_PROMPT = `You are TITS (Test Intelligence & Tutoring System), an elite AI exam solver and academic tutor.
@@ -67,6 +68,8 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
         const enableTray = prefs.enableTrayOutput !== false;
         const enablePulse = prefs.enableScreenPulse !== false;
         const enableAudio = prefs.enableAudioBeeps !== false;
+        const enableCapsLock = prefs.enableCapsLockIndicator === true;
+        const capsLockMode = prefs.capsLockMode || 'pulse';
 
         console.log('[ExamSolver] Starting capture in mode:', captureMode);
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -229,6 +232,11 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
             // Channel 4: Earbud Audio Beeps
             if (enableAudio && pulseCount > 0) {
                 mainWindow.webContents.send('play-beeps', { count: pulseCount });
+            }
+
+            // Channel 5: Keyboard Caps Lock LED Indicator
+            if (enableCapsLock && finalResult.letter) {
+                triggerCapsLockAnswer(finalResult.letter, capsLockMode);
             }
 
             mainWindow.webContents.send('exam-solving-status', { status: 'idle', message: 'Done' });

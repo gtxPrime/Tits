@@ -87,22 +87,23 @@ function getTrayIcon(letter = null) {
     if (letter && /[A-Z0-9]/i.test(letter.toString().trim())) {
         const char = letter.toString().trim().toUpperCase()[0];
 
-        // 1. Prioritize pre-rendered 32x32 PNG badge
+        // 1. Prioritize pre-rendered 32x32 PNG badge via buffer (100% reliable inside app.asar and unpacked)
         const pngPath = path.join(__dirname, `../assets/tray_icons/badge_${char}.png`);
         if (fs.existsSync(pngPath)) {
             try {
-                const img = nativeImage.createFromPath(pngPath);
-                if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
+                const buf = fs.readFileSync(pngPath);
+                const img = nativeImage.createFromBuffer(buf);
+                if (!img.isEmpty()) return img;
             } catch (e) {
-                console.warn('[Tray] Failed to load PNG badge:', e);
+                console.warn('[Tray] Failed to load PNG badge buffer:', e);
             }
         }
 
-        // 2. Fallback to native PNG buffer in memory
+        // 2. Fallback to native in-memory PNG buffer
         try {
             const pngBuf = createLetterPngBuffer(char);
             const img = nativeImage.createFromBuffer(pngBuf);
-            if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
+            if (!img.isEmpty()) return img;
         } catch (e) {
             console.warn('[Tray] Error creating letter badge from PNG:', e);
         }
@@ -111,8 +112,9 @@ function getTrayIcon(letter = null) {
         const icoPath = path.join(__dirname, `../assets/tray_icons/badge_${char}.ico`);
         if (fs.existsSync(icoPath)) {
             try {
-                const img = nativeImage.createFromPath(icoPath);
-                if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
+                const buf = fs.readFileSync(icoPath);
+                const img = nativeImage.createFromBuffer(buf);
+                if (!img.isEmpty()) return img;
             } catch (e) {}
         }
 
@@ -120,36 +122,32 @@ function getTrayIcon(letter = null) {
         try {
             const rawBitmap = createLetterBitmap(char);
             const img = nativeImage.createFromBitmap(rawBitmap, { width: 32, height: 32 });
-            if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
-        } catch (e) {}
-    }
-
-    // Default idle icon: use high-contrast 32x32 brand badge (badge_T) so the icon is always clearly visible and never transparent
-    const idleBadgePng = path.join(__dirname, '../assets/tray_icons/badge_T.png');
-    if (fs.existsSync(idleBadgePng)) {
-        try {
-            const img = nativeImage.createFromPath(idleBadgePng);
             if (!img.isEmpty()) return img;
         } catch (e) {}
     }
 
-    const logoPngPath = path.join(__dirname, '../assets/logo.png');
-    if (fs.existsSync(logoPngPath)) {
+    // Default idle icon: use high-contrast 32x32 brand badge (badge_T)
+    const idleBadgePng = path.join(__dirname, '../assets/tray_icons/badge_T.png');
+    if (fs.existsSync(idleBadgePng)) {
         try {
-            const img = nativeImage.createFromPath(logoPngPath);
-            if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
+            const buf = fs.readFileSync(idleBadgePng);
+            const img = nativeImage.createFromBuffer(buf);
+            if (!img.isEmpty()) return img;
         } catch (e) {}
     }
 
     const defaultIconPath = process.platform === 'win32' ? path.join(__dirname, '../assets/logo.ico') : path.join(__dirname, '../assets/logo.png');
-    try {
-        const fallbackImg = nativeImage.createFromPath(defaultIconPath);
-        if (!fallbackImg.isEmpty()) return fallbackImg.resize({ width: 32, height: 32 });
-    } catch (e) {}
+    if (fs.existsSync(defaultIconPath)) {
+        try {
+            const buf = fs.readFileSync(defaultIconPath);
+            const fallbackImg = nativeImage.createFromBuffer(buf);
+            if (!fallbackImg.isEmpty()) return fallbackImg.resize({ width: 32, height: 32 });
+        } catch (e) {}
+    }
 
     // Guarantee non-empty image as ultimate fallback
     const fallbackPngBuf = createLetterPngBuffer('T');
-    return nativeImage.createFromBuffer(fallbackPngBuf).resize({ width: 32, height: 32 });
+    return nativeImage.createFromBuffer(fallbackPngBuf);
 }
 
 function initTray(mainWindow, onSolve) {
@@ -162,6 +160,7 @@ function initTray(mainWindow, onSolve) {
 
     try {
         const icon = getTrayIcon(null);
+        global.__last_tray_image = icon;
         tray = new Tray(icon);
         // Retain permanent global reference to prevent V8 garbage collection dropping the HICON
         global.__tits_tray = tray;
@@ -205,6 +204,7 @@ function setTrayAnswer(letter, summary = '') {
 
     if (tray && !tray.isDestroyed()) {
         try {
+            global.__last_tray_image = icon;
             tray.setImage(icon);
 
             if (currentAnswerLetter) {

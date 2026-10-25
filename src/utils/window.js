@@ -52,8 +52,32 @@ function createWindow(sendToRenderer, geminiSessionRef) {
     );
 
     const prefs = storage.getPreferences() || {};
+    try {
+        const debugLogger = require('./debugLogger');
+        debugLogger.info('Window', 'Setting up main window', {
+            platform: process.platform,
+            contentProtection: !!prefs.contentProtection,
+            opacity: initialOpacity,
+            dimensions: { width: windowWidth, height: windowHeight },
+        });
+    } catch (e) {}
+
     if (prefs.contentProtection) {
-        mainWindow.setContentProtection(true);
+        try {
+            mainWindow.setContentProtection(true);
+            const debugLogger = require('./debugLogger');
+            debugLogger.info('Window', 'Screen share protection enabled', {
+                platform: process.platform,
+                mechanism:
+                    process.platform === 'win32' ? 'WDA_EXCLUDEFROMCAPTURE' : process.platform === 'darwin' ? 'NSWindowSharingNone' : 'Fallback',
+            });
+        } catch (err) {
+            console.warn('Failed to set content protection:', err);
+            try {
+                const debugLogger = require('./debugLogger');
+                debugLogger.warn('Window', 'Failed to set content protection', err.message);
+            } catch (e) {}
+        }
     }
     if (process.platform === 'win32') {
         mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });

@@ -787,6 +787,11 @@ export class CustomizeView extends LitElement {
         isTestingTray: { type: Boolean },
         isTestingPulse: { type: Boolean },
         isTestingAudio: { type: Boolean },
+        logsContent: { type: String },
+        logsPath: { type: String },
+        logsStatus: { type: String },
+        isExportingLogs: { type: Boolean },
+        showLogsPreview: { type: Boolean },
         onProfileChange: { type: Function },
         onLanguageChange: { type: Function },
         onImageQualityChange: { type: Function },
@@ -854,6 +859,12 @@ export class CustomizeView extends LitElement {
         this.isTestingTray = false;
         this.isTestingPulse = false;
         this.isTestingAudio = false;
+
+        this.logsContent = '';
+        this.logsPath = '';
+        this.logsStatus = '';
+        this.isExportingLogs = false;
+        this.showLogsPreview = false;
 
         this._loadFromStorage();
     }
@@ -2305,6 +2316,153 @@ export class CustomizeView extends LitElement {
         `;
     }
 
+    async loadLogs() {
+        try {
+            const { ipcRenderer } = require('electron');
+            const res = await ipcRenderer.invoke('logs:get-content');
+            if (res && res.success) {
+                this.logsContent = res.content || '';
+                this.logsPath = res.path || '';
+            }
+        } catch (e) {
+            console.error('Failed to load logs:', e);
+        }
+    }
+
+    async copyLogsToClipboard() {
+        try {
+            const { ipcRenderer } = require('electron');
+            const res = await ipcRenderer.invoke('logs:copy-clipboard');
+            if (res && res.success) {
+                this.logsStatus = 'Copied to clipboard!';
+                setTimeout(() => {
+                    this.logsStatus = '';
+                }, 3000);
+            }
+        } catch (e) {
+            this.logsStatus = `Error: ${e.message}`;
+        }
+    }
+
+    async openLogInFolder() {
+        try {
+            const { ipcRenderer } = require('electron');
+            await ipcRenderer.invoke('logs:open-folder');
+        } catch (e) {
+            this.logsStatus = `Error: ${e.message}`;
+        }
+    }
+
+    async exportLogs() {
+        try {
+            this.isExportingLogs = true;
+            const { ipcRenderer } = require('electron');
+            const res = await ipcRenderer.invoke('logs:export');
+            if (res && res.success) {
+                this.logsStatus = `Exported to ${res.path}`;
+                setTimeout(() => {
+                    this.logsStatus = '';
+                }, 4000);
+            }
+        } catch (e) {
+            this.logsStatus = `Error: ${e.message}`;
+        } finally {
+            this.isExportingLogs = false;
+        }
+    }
+
+    toggleLogsPreview() {
+        this.showLogsPreview = !this.showLogsPreview;
+        if (this.showLogsPreview) {
+            this.loadLogs();
+        }
+    }
+
+    renderDiagnosticsSection() {
+        const isMac = process.platform === 'darwin';
+        const isLinux = process.platform === 'linux';
+        const platformLabel = isMac ? 'macOS (Darwin)' : isLinux ? 'Linux (X11/Wayland)' : 'Windows (10/11)';
+
+        return html`
+            <section class="m3-surface" style="border-color: rgba(56, 189, 248, 0.25);">
+                <div class="surface-header">
+                    <div class="surface-title" style="color:#38bdf8;">
+                        <span class="surface-icon" style="color:#38bdf8;">${icons.sliders(18)}</span>
+                        <span>Diagnostics & System Logs (logs.txt)</span>
+                    </div>
+                    <span class="badge-gold" style="color:#38bdf8; background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.3);">
+                        ${platformLabel}
+                    </span>
+                </div>
+                <div class="surface-subtitle">
+                    Comprehensive cross-platform debug report capturing screen share invisibility status, display scaling, audio loopback, hardware
+                    LED controller, and vision API telemetry. Share this log file if any feature needs debugging on Mac, Linux, or Windows.
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:6px;">
+                    <button
+                        class="primary-action-btn"
+                        @click=${this.exportLogs}
+                        ?disabled=${this.isExportingLogs}
+                        style="background:#0284c7; color:#ffffff; font-weight:700; border:none; border-radius:999px; padding:10px 20px; cursor:pointer;"
+                    >
+                        ${this.isExportingLogs ? 'Exporting...' : 'Share / Export logs.txt'}
+                    </button>
+                    <button
+                        class="test-channel-btn"
+                        @click=${this.copyLogsToClipboard}
+                        style="background:rgba(255,255,255,0.07); color:#f3f4f6; border:1px solid rgba(255,255,255,0.15); border-radius:999px; padding:10px 18px; cursor:pointer;"
+                    >
+                        Copy Logs to Clipboard
+                    </button>
+                    <button
+                        class="test-channel-btn"
+                        @click=${this.openLogInFolder}
+                        style="background:rgba(255,255,255,0.07); color:#f3f4f6; border:1px solid rgba(255,255,255,0.15); border-radius:999px; padding:10px 18px; cursor:pointer;"
+                    >
+                        Show in Folder
+                    </button>
+                    <button
+                        class="test-channel-btn"
+                        @click=${this.toggleLogsPreview}
+                        style="background:rgba(255,255,255,0.07); color:#f3f4f6; border:1px solid rgba(255,255,255,0.15); border-radius:999px; padding:10px 18px; cursor:pointer;"
+                    >
+                        ${this.showLogsPreview ? 'Hide Log Preview' : 'View Live Log'}
+                    </button>
+                </div>
+
+                ${
+                    this.logsStatus
+                        ? html`
+                              <div
+                                  style="font-size:12px; font-weight:600; color:#38bdf8; padding:6px 14px; background:rgba(56,189,248,0.1); border-radius:8px; border:1px solid rgba(56,189,248,0.25); display:inline-block; margin-top:4px;"
+                              >
+                                  ${this.logsStatus}
+                              </div>
+                          `
+                        : ''
+                }
+                ${
+                    this.showLogsPreview
+                        ? html`
+                              <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px;">
+                                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#9ca3af;">
+                                      <span>Log File: <code class="path-code">${this.logsPath || 'logs.txt'}</code></span>
+                                      <span @click=${this.loadLogs} style="cursor:pointer; color:#38bdf8; text-decoration:underline;">Refresh</span>
+                                  </div>
+                                  <textarea
+                                      readonly
+                                      style="width:100%; height:220px; background:#0b0c10; border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:12px; font-family:var(--font-mono, monospace); font-size:11px; color:#a5f3fc; line-height:1.5; resize:vertical; outline:none;"
+                                      .value=${this.logsContent || 'Loading diagnostic logs...'}
+                                  ></textarea>
+                              </div>
+                          `
+                        : ''
+                }
+            </section>
+        `;
+    }
+
     renderPrivacySection() {
         return html`
             <section class="m3-surface danger-surface">
@@ -2346,7 +2504,7 @@ export class CustomizeView extends LitElement {
 
                 ${this.renderModeSection()} ${this.renderBYOKSection()} ${this.renderExamSettingsSection()} ${this.renderStealthAndSecuritySection()}
                 ${this.renderAudioSection()} ${this.renderLanguageSection()} ${this.renderAppearanceSection()} ${this.renderKeyboardSection()}
-                ${this.renderPrivacySection()}
+                ${this.renderDiagnosticsSection()} ${this.renderPrivacySection()}
             </div>
         `;
     }

@@ -144,8 +144,29 @@ done
             proc.unref();
             activeProcess = proc;
         }
+
+        try {
+            const debugLogger = require('./debugLogger');
+            debugLogger.info('CapsLock', `Pulsing CapsLock LED ${blinkCount} times for option answer`, {
+                platform,
+                count: blinkCount,
+                interval,
+            });
+        } catch (_) {}
     } catch (err) {
         console.warn('[CapsLock] Failed to pulse CapsLock LED:', err.message);
+        try {
+            const debugLogger = require('./debugLogger');
+            debugLogger.warn('CapsLock', `Failed to pulse CapsLock LED: ${err.message}`, {
+                platform,
+                hint:
+                    platform === 'darwin'
+                        ? 'Ensure Accessibility permission is enabled in macOS System Settings > Privacy & Security > Accessibility'
+                        : platform === 'linux'
+                          ? 'Ensure xdotool is installed (sudo apt install xdotool)'
+                          : 'Windows script execution error',
+            });
+        } catch (_) {}
     }
 }
 

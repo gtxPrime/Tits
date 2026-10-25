@@ -37,11 +37,47 @@ async function captureScreenRegion(options = {}) {
 
     const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Screen capture timed out after 6 seconds')), 6000));
 
-    const sources = await Promise.race([sourcesPromise, timeoutPromise]);
+    let sources;
+    try {
+        sources = await Promise.race([sourcesPromise, timeoutPromise]);
+    } catch (err) {
+        try {
+            const debugLogger = require('./debugLogger');
+            debugLogger.error('ScreenCapture', `Screen capture failed: ${err.message}`, {
+                platform: process.platform,
+                hint:
+                    process.platform === 'darwin'
+                        ? 'Ensure Screen Recording permission is granted to TITS in System Settings > Privacy & Security > Screen Recording'
+                        : 'Verify display driver access',
+            });
+        } catch (_) {}
+        throw err;
+    }
 
     if (!sources || sources.length === 0) {
-        throw new Error('No screen capture sources available');
+        const noSourcesErr = new Error('No screen capture sources available');
+        try {
+            const debugLogger = require('./debugLogger');
+            debugLogger.error('ScreenCapture', 'No capture sources returned by desktopCapturer', {
+                platform: process.platform,
+                hint:
+                    process.platform === 'darwin'
+                        ? 'macOS requires Screen Recording permission to be granted in System Settings'
+                        : 'Display server access failure',
+            });
+        } catch (_) {}
+        throw noSourcesErr;
     }
+
+    try {
+        const debugLogger = require('./debugLogger');
+        debugLogger.info('ScreenCapture', `Screen captured successfully (${mode})`, {
+            cursor: cursorPoint,
+            displayId: display.id,
+            scaleFactor,
+            sourcesCount: sources.length,
+        });
+    } catch (_) {}
 
     // Match source by display id if possible or use primary/first
     let selectedSource = sources[0];

@@ -14,6 +14,7 @@ export class ExamSolverView extends LitElement {
         enableAudioBeeps: { type: Boolean },
         solveKeybind: { type: String },
         hasApiKey: { type: Boolean },
+        errorMessage: { type: String },
     };
 
     static styles = css`
@@ -495,6 +496,56 @@ export class ExamSolverView extends LitElement {
         .byok-link:hover {
             color: #ffffff;
         }
+
+        .m3-error-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        .action-btn-secondary {
+            background: #242531;
+            color: #f3f4f6;
+            font-weight: 600;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            padding: 7px 15px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn-secondary:hover {
+            background: rgba(250, 204, 21, 0.15);
+            border-color: rgba(250, 204, 21, 0.3);
+            color: #facc15;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .icon-btn:hover {
+            color: #f3f4f6;
+            background: rgba(255, 255, 255, 0.08);
+        }
     `;
 
     constructor() {
@@ -510,6 +561,7 @@ export class ExamSolverView extends LitElement {
         this.enableAudioBeeps = true;
         this.solveKeybind = 'Ctrl+Alt+Q';
         this.hasApiKey = true;
+        this.errorMessage = '';
     }
 
     async connectedCallback() {
@@ -549,22 +601,36 @@ export class ExamSolverView extends LitElement {
         if (this.isSolving) return;
         this.isSolving = true;
         this.statusMessage = 'Capturing & solving...';
+        this.errorMessage = '';
+        this.requestUpdate();
 
         try {
             if (window.tits && window.tits.solveExam) {
                 const res = await window.tits.solveExam({ mode: this.examCaptureRegion });
                 if (res && res.success) {
                     this.lastResult = res;
+                    this.errorMessage = '';
                 } else if (res && res.error) {
-                    alert('Error solving question: ' + res.error);
+                    this.errorMessage = res.error;
                 }
             }
         } catch (err) {
             console.error('Error in triggerSolve:', err);
-            alert('Failed to trigger exam solve: ' + err.message);
+            this.errorMessage = err.message || 'Failed to trigger exam solve.';
         } finally {
             this.isSolving = false;
             this.statusMessage = '';
+            this.requestUpdate();
+        }
+    }
+
+    openSettings() {
+        const app = window.titsApp || document.querySelector('tits-app');
+        if (app && typeof app.navigate === 'function') {
+            app.navigate('customize');
+        } else if (app) {
+            app.currentView = 'customize';
+            app.requestUpdate();
         }
     }
 
@@ -615,6 +681,32 @@ export class ExamSolverView extends LitElement {
                         <span class="kbd-capsule">${this.solveKeybind}</span>
                     </button>
                 </div>
+
+                <!-- Error Notification Banner (Non-blocking) -->
+                ${
+                    this.errorMessage
+                        ? html`
+                              <div class="m3-error-banner">
+                                  <span style="color:#ef4444;display:flex;align-items:center;">${icons.alert(20)}</span>
+                                  <div style="flex:1;font-size:12.5px;color:#fecaca;line-height:1.45;font-weight:500;">${this.errorMessage}</div>
+                                  <button class="action-btn-secondary" @click=${() => this.openSettings()}>
+                                      <span>Open Settings (BYOK)</span>
+                                      ${icons.arrowUpRight(11)}
+                                  </button>
+                                  <button
+                                      class="icon-btn"
+                                      title="Dismiss"
+                                      @click=${() => {
+                                          this.errorMessage = '';
+                                          this.requestUpdate();
+                                      }}
+                                  >
+                                      ${icons.x(14)}
+                                  </button>
+                              </div>
+                          `
+                        : ''
+                }
 
                 <!-- Stealth Output Channels Matrix -->
                 <div>

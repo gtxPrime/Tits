@@ -62,6 +62,13 @@ function createWindow(sendToRenderer, geminiSessionRef) {
         mainWindow.setSkipTaskbar(false);
     }
 
+    const initialOpacity = typeof prefs.backgroundTransparency === 'number' ? Math.max(0.1, Math.min(1.0, prefs.backgroundTransparency)) : 0.8;
+    try {
+        mainWindow.setOpacity(initialOpacity);
+    } catch (e) {
+        console.warn('Failed to set initial window opacity:', e);
+    }
+
     // Hide from Mission Control on macOS
     if (process.platform === 'darwin') {
         try {
@@ -398,6 +405,31 @@ function setupWindowIpcHandlers(mainWindow, sendToRenderer, geminiSessionRef) {
             return { success: false, error: 'Window destroyed' };
         } catch (error) {
             console.error('Error setting content protection:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('set-window-opacity', async (event, opacity) => {
+        try {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                const val = typeof opacity === 'number' ? Math.max(0.1, Math.min(1.0, opacity)) : 1.0;
+                mainWindow.setOpacity(val);
+                return { success: true, opacity: val };
+            }
+            return { success: false, error: 'Window destroyed' };
+        } catch (error) {
+            console.error('Error setting window opacity:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('get-window-opacity', async () => {
+        try {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                return { success: true, opacity: mainWindow.getOpacity() };
+            }
+            return { success: false, opacity: 1.0 };
+        } catch (error) {
             return { success: false, error: error.message };
         }
     });

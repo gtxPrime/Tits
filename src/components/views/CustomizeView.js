@@ -511,6 +511,236 @@ export class CustomizeView extends LitElement {
                 border-radius: 6px;
                 color: #facc15;
             }
+
+            /* Model Usage and Comparison Styles */
+            .model-usage-card {
+                background: #14151e;
+                border: 1px solid rgba(250, 204, 21, 0.2);
+                border-radius: 18px;
+                padding: 18px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+                margin-top: 10px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            }
+
+            .usage-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .usage-model-title {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 700;
+                font-size: 14px;
+                color: #ffffff;
+            }
+
+            .usage-badge {
+                font-size: 11px;
+                font-weight: 700;
+                padding: 3px 10px;
+                border-radius: 999px;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                background: rgba(250, 204, 21, 0.15);
+                color: #facc15;
+                border: 1px solid rgba(250, 204, 21, 0.35);
+            }
+
+            .usage-stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+                gap: 10px;
+            }
+
+            .stat-box {
+                background: #1b1c26;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+                padding: 10px 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .stat-label {
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #9ca3af;
+                font-weight: 600;
+            }
+
+            .stat-value {
+                font-size: 15px;
+                font-weight: 800;
+                color: #f9fafb;
+                display: flex;
+                align-items: baseline;
+                gap: 4px;
+            }
+
+            .stat-value.healthy {
+                color: #10b981;
+            }
+
+            .stat-value.warning {
+                color: #f59e0b;
+            }
+
+            .stat-value.depleted {
+                color: #ef4444;
+            }
+
+            .progress-track {
+                width: 100%;
+                height: 8px;
+                background: rgba(255, 255, 255, 0.08);
+                border-radius: 999px;
+                overflow: hidden;
+                position: relative;
+            }
+
+            .progress-fill {
+                height: 100%;
+                border-radius: 999px;
+                transition: width 0.3s ease;
+            }
+
+            .progress-fill.healthy {
+                background: linear-gradient(90deg, #10b981, #34d399);
+            }
+
+            .progress-fill.warning {
+                background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            }
+
+            .progress-fill.depleted {
+                background: linear-gradient(90deg, #ef4444, #f87171);
+            }
+
+            .model-intel-row {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                padding-top: 10px;
+                border-top: 1px solid rgba(255, 255, 255, 0.06);
+                font-size: 12px;
+                color: #d1d5db;
+                line-height: 1.5;
+            }
+
+            .intel-highlight {
+                color: #facc15;
+                font-weight: 600;
+            }
+
+            .ratings-row {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                flex-wrap: wrap;
+                font-size: 11px;
+                color: #9ca3af;
+            }
+
+            .rating-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: rgba(255, 255, 255, 0.04);
+                padding: 4px 10px;
+                border-radius: 8px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+            }
+
+            .comparison-toggle-btn {
+                background: transparent;
+                border: 1px dashed rgba(250, 204, 21, 0.35);
+                color: #facc15;
+                border-radius: 12px;
+                padding: 8px 16px;
+                font-size: 12px;
+                font-weight: 700;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: 6px;
+                width: fit-content;
+                transition: all 0.15s ease;
+            }
+
+            .comparison-toggle-btn:hover {
+                background: rgba(250, 204, 21, 0.08);
+                border-color: #facc15;
+            }
+
+            .matrix-wrap {
+                margin-top: 8px;
+                overflow-x: auto;
+                background: #171822;
+                border-radius: 14px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                padding: 8px;
+            }
+
+            .matrix-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 11px;
+                min-width: 650px;
+            }
+
+            .matrix-table th {
+                text-align: left;
+                padding: 8px 10px;
+                background: rgba(255, 255, 255, 0.03);
+                color: #9ca3af;
+                font-weight: 600;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .matrix-table td {
+                padding: 8px 10px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+                vertical-align: middle;
+            }
+
+            .matrix-table tr.active-model-row {
+                background: rgba(250, 204, 21, 0.07);
+            }
+
+            .matrix-select-btn {
+                background: #252636;
+                color: #f3f4f6;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                padding: 4px 10px;
+                font-size: 10px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.15s ease;
+            }
+
+            .matrix-select-btn:hover {
+                background: #facc15;
+                color: #171821;
+            }
+
+            .matrix-select-btn.current {
+                background: rgba(250, 204, 21, 0.2);
+                border-color: #facc15;
+                color: #facc15;
+                cursor: default;
+            }
         `,
     ];
 
@@ -550,6 +780,9 @@ export class CustomizeView extends LitElement {
         enableCapsLockIndicator: { type: Boolean },
         capsLockMode: { type: String },
         autoScrollEnabled: { type: Boolean },
+        modelUsages: { type: Object },
+        activeModelUsage: { type: Object },
+        showModelComparison: { type: Boolean },
         onProfileChange: { type: Function },
         onLanguageChange: { type: Function },
         onImageQualityChange: { type: Function },
@@ -608,8 +841,11 @@ export class CustomizeView extends LitElement {
         this.beepPitch = 880;
         this.screenPulseColor = '#facc15';
         this.screenPulseDuration = 800;
-        this.examVisionModel = 'gemini-2.5-flash';
+        this.examVisionModel = 'gemini-flash-latest';
         this.autoScrollEnabled = true;
+        this.modelUsages = {};
+        this.activeModelUsage = null;
+        this.showModelComparison = false;
 
         this._loadFromStorage();
     }
@@ -652,8 +888,17 @@ export class CustomizeView extends LitElement {
             this.beepPitch = prefs.beepPitch ?? 880;
             this.screenPulseColor = prefs.screenPulseColor || '#facc15';
             this.screenPulseDuration = prefs.screenPulseDuration || 800;
-            this.examVisionModel = prefs.examVisionModel || 'gemini-2.5-flash';
+            this.examVisionModel = prefs.examVisionModel || 'gemini-flash-latest';
             this.autoScrollEnabled = prefs.autoScrollEnabled !== false;
+
+            if (window.tits && window.tits.storage && window.tits.storage.getModelUsage) {
+                try {
+                    this.activeModelUsage = await window.tits.storage.getModelUsage(this.examVisionModel);
+                    this.modelUsages = (await window.tits.storage.getAllModelUsages()) || {};
+                } catch (err) {
+                    console.warn('Failed to load model usage stats:', err);
+                }
+            }
 
             this.googleSearchEnabled = prefs.googleSearchEnabled ?? true;
             this.backgroundTransparency = prefs.backgroundTransparency ?? 0.8;
@@ -1137,6 +1382,25 @@ export class CustomizeView extends LitElement {
     async handleExamVisionModelChange(e) {
         this.examVisionModel = e.target.value;
         await tits.storage.updatePreference('examVisionModel', this.examVisionModel);
+        if (window.tits && window.tits.storage && window.tits.storage.getModelUsage) {
+            this.activeModelUsage = await window.tits.storage.getModelUsage(this.examVisionModel);
+            this.modelUsages = (await window.tits.storage.getAllModelUsages()) || {};
+        }
+        this.requestUpdate();
+    }
+
+    async selectModel(modelId) {
+        this.examVisionModel = modelId;
+        await tits.storage.updatePreference('examVisionModel', modelId);
+        if (window.tits && window.tits.storage && window.tits.storage.getModelUsage) {
+            this.activeModelUsage = await window.tits.storage.getModelUsage(modelId);
+            this.modelUsages = (await window.tits.storage.getAllModelUsages()) || {};
+        }
+        this.requestUpdate();
+    }
+
+    toggleModelComparison() {
+        this.showModelComparison = !this.showModelComparison;
         this.requestUpdate();
     }
 
@@ -1338,6 +1602,244 @@ export class CustomizeView extends LitElement {
         `;
     }
 
+    renderActiveModelUsageCard() {
+        const usage = this.activeModelUsage || {
+            model: this.examVisionModel,
+            meta: {
+                name: this.examVisionModel,
+                provider: this.examVisionModel.startsWith('llama') ? 'Groq LPUs' : 'Google Gemini',
+                dailyLimit: 250,
+                speedLabel: 'Fast (~1.2s)',
+                speedRating: 5,
+                reasoningRating: 4,
+                badge: 'Recommended',
+                tagline: 'Best all-rounder: ultra-fast responses, high accuracy, and 250 RPD quota',
+                comparison: 'Faster than Pro models, with 12x higher free quota than 2.5-flash (250 vs 20 RPD). Ideal for standard exams.',
+            },
+            usedToday: 0,
+            dailyLimit: 250,
+            remaining: 250,
+            percentUsed: 0,
+            percentRemaining: 100,
+            status: 'good',
+        };
+
+        const meta = usage.meta || {};
+        const isDepleted = usage.status === 'depleted';
+        const isLow = usage.status === 'low';
+        const statusClass = isDepleted ? 'depleted' : isLow ? 'warning' : 'healthy';
+
+        return html`
+            <div class="model-usage-card">
+                <div class="usage-header">
+                    <div class="usage-model-title">
+                        <span style="color:#facc15;display:flex;">${icons.sparkles(16)}</span>
+                        <span>${meta.name || usage.model}</span>
+                        <span style="font-size:11px;color:#9ca3af;font-weight:400;">(${meta.provider})</span>
+                    </div>
+                    <span class="usage-badge">${meta.badge || 'Active Model'}</span>
+                </div>
+
+                <div class="usage-stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">Used Today</span>
+                        <span class="stat-value">
+                            ${usage.usedToday}
+                            <span style="font-size:11px;color:#9ca3af;font-weight:500;">/ ${usage.dailyLimit}</span>
+                        </span>
+                    </div>
+
+                    <div class="stat-box">
+                        <span class="stat-label">Left Today (Calculated)</span>
+                        <span class="stat-value ${statusClass}">
+                            ${usage.remaining}
+                            <span style="font-size:11px;color:#9ca3af;font-weight:500;">left (${usage.percentRemaining}%)</span>
+                        </span>
+                    </div>
+
+                    <div class="stat-box">
+                        <span class="stat-label">Speed Rating</span>
+                        <span class="stat-value" style="font-size:13px;color:#38bdf8;"> ${meta.speedLabel || 'Fast'} </span>
+                    </div>
+
+                    <div class="stat-box">
+                        <span class="stat-label">Reasoning Quality</span>
+                        <span class="stat-value" style="font-size:13px;color:#c084fc;">
+                            ${'★'.repeat(Math.floor(meta.reasoningRating || 4))}
+                            <span style="font-size:11px;color:#9ca3af;font-weight:500;">(${meta.reasoningRating || 4}/5)</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;">
+                        <span>Daily Free Quota Usage</span>
+                        <span>${usage.percentUsed}% used • ${usage.remaining} requests remaining</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill ${statusClass}" style="width: ${Math.max(4, usage.percentRemaining)}%"></div>
+                    </div>
+                </div>
+
+                <div class="model-intel-row">
+                    <div><span class="intel-highlight">Why Choose This Model:</span> ${meta.tagline}</div>
+                    <div><span class="intel-highlight">Speed vs Accuracy Comparison:</span> ${meta.comparison}</div>
+                </div>
+
+                <button class="comparison-toggle-btn" @click=${this.toggleModelComparison}>
+                    <span style="display:flex;">${this.showModelComparison ? icons.chevronUp(14) : icons.chevronDown(14)}</span>
+                    <span>${this.showModelComparison ? 'Hide Model Comparison Matrix' : 'Which Model is Faster / Better? Compare All Models'}</span>
+                </button>
+
+                ${this.showModelComparison ? this.renderModelComparisonMatrix() : ''}
+            </div>
+        `;
+    }
+
+    renderModelComparisonMatrix() {
+        const modelsList = [
+            {
+                id: 'gemini-flash-latest',
+                name: 'Gemini Flash (Latest)',
+                provider: 'Google',
+                speed: 'Ultra-Fast (~1.2s)',
+                speedRank: '⚡⚡⚡⚡⚡',
+                reasoning: 'High (4/5)',
+                dailyQuota: '250 / day',
+                bestFor: 'Best overall choice: high speed, great accuracy, generous quota',
+                verdict: 'Recommended',
+            },
+            {
+                id: 'gemini-3.5-flash',
+                name: 'Gemini 3.5 Flash',
+                provider: 'Google',
+                speed: 'Very Fast (~1.4s)',
+                speedRank: '⚡⚡⚡⚡⚡',
+                reasoning: 'Enhanced (4.5/5)',
+                dailyQuota: '250 / day',
+                bestFor: 'Better question comprehension & blurry diagram OCR',
+                verdict: 'Smarter & Fast',
+            },
+            {
+                id: 'gemini-flash-lite-latest',
+                name: 'Gemini Flash-Lite',
+                provider: 'Google',
+                speed: 'Blazing Fast (~0.9s)',
+                speedRank: '⚡⚡⚡⚡⚡ (Fastest)',
+                reasoning: 'Standard (3.5/5)',
+                dailyQuota: '500 / day (Highest)',
+                bestFor: 'Highest Google quota (500 RPD) & rapid-fire quiz solving',
+                verdict: 'Fastest Gemini',
+            },
+            {
+                id: 'gemini-2.5-flash',
+                name: 'Gemini 2.5 Flash',
+                provider: 'Google',
+                speed: 'Fast (~1.5s)',
+                speedRank: '⚡⚡⚡⚡',
+                reasoning: 'Strong (4.5/5)',
+                dailyQuota: '20 / day (Strict Free Limit)',
+                bestFor: 'High precision STEM solving (requires paid API key for >20 req)',
+                verdict: 'High Precision',
+            },
+            {
+                id: 'gemini-2.5-pro',
+                name: 'Gemini 2.5 Pro',
+                provider: 'Google',
+                speed: 'Moderate (~3.5s)',
+                speedRank: '⚡⚡⚡',
+                reasoning: 'Elite (5/5)',
+                dailyQuota: '20 / day (Strict Free Limit)',
+                bestFor: 'Hard math, complex code debugging, and intricate proofs',
+                verdict: 'Deep Logic',
+            },
+            {
+                id: 'gemini-3.1-pro-preview',
+                name: 'Gemini 3.1 Pro Preview',
+                provider: 'Google',
+                speed: 'Thorough (~4.5s)',
+                speedRank: '⚡⚡',
+                reasoning: 'Maximum (5/5)',
+                dailyQuota: '20 / day (Strict Free Limit)',
+                bestFor: 'Hardest university-level exam questions & multi-part deduction',
+                verdict: 'Deepest Reasoning',
+            },
+            {
+                id: 'llama-3.2-11b-vision-preview',
+                name: 'Groq Llama 3.2 11B',
+                provider: 'Groq LPU',
+                speed: 'Instant (~0.8s)',
+                speedRank: '⚡⚡⚡⚡⚡ (Fastest Overall)',
+                reasoning: 'Good (3.5/5)',
+                dailyQuota: '7,000 / day',
+                bestFor: 'Virtually unlimited daily usage & hardware-accelerated speed',
+                verdict: 'Massive Quota',
+            },
+            {
+                id: 'llama-3.2-90b-vision-preview',
+                name: 'Groq Llama 3.2 90B',
+                provider: 'Groq LPU',
+                speed: 'Fast (~1.8s)',
+                speedRank: '⚡⚡⚡⚡',
+                reasoning: 'High (4.5/5)',
+                dailyQuota: '3,500 / day',
+                bestFor: 'Open-weights accuracy on charts and complex question figures',
+                verdict: 'Accurate Open Vision',
+            },
+        ];
+
+        return html`
+            <div class="matrix-wrap">
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Speed</th>
+                            <th>Reasoning</th>
+                            <th>Free Quota</th>
+                            <th>Which is Better / Best For</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${modelsList.map(m => {
+                            const isCurrent = this.examVisionModel === m.id;
+                            return html`
+                                <tr class="${isCurrent ? 'active-model-row' : ''}">
+                                    <td>
+                                        <div style="font-weight:700;color:${isCurrent ? '#facc15' : '#f9fafb'};">${m.name}</div>
+                                        <div style="font-size:10px;color:#9ca3af;">${m.provider}</div>
+                                    </td>
+                                    <td>
+                                        <div style="color:#38bdf8;font-weight:600;">${m.speed}</div>
+                                        <div style="font-size:9px;color:#9ca3af;">${m.speedRank}</div>
+                                    </td>
+                                    <td>
+                                        <div style="color:#c084fc;font-weight:600;">${m.reasoning}</div>
+                                        <div style="font-size:10px;color:#facc15;">${m.verdict}</div>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight:700;color:#10b981;">${m.dailyQuota}</div>
+                                    </td>
+                                    <td style="max-width:260px;font-size:11px;color:#d1d5db;line-height:1.4;">${m.bestFor}</td>
+                                    <td>
+                                        <button
+                                            class="matrix-select-btn ${isCurrent ? 'current' : ''}"
+                                            @click=${() => (!isCurrent ? this.selectModel(m.id) : null)}
+                                            ?disabled=${isCurrent}
+                                        >
+                                            ${isCurrent ? 'Selected' : 'Use Model'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
     renderExamSettingsSection() {
         return html`
             <section class="m3-surface">
@@ -1358,14 +1860,26 @@ export class CustomizeView extends LitElement {
                         </select>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" style="grid-column: 1 / -1;">
                         <label class="form-label">Exam Vision Model</label>
                         <select class="control" .value=${this.examVisionModel} @change=${this.handleExamVisionModelChange}>
-                            <option value="gemini-2.5-flash">Gemini 2.5 Flash (Sub-second Reasoning - Recommended)</option>
-                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (High Efficiency)</option>
-                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep Reasoning & STEM)</option>
-                            <option value="llama-3.2-11b-vision-preview">Groq Llama 3.2 11B Vision (Ultra Fast)</option>
+                            <optgroup label="Google Gemini (Free & High Quota)">
+                                <option value="gemini-flash-latest">Gemini Flash (Latest) [Ultra-Fast ~1.2s • 250 RPD • Recommended]</option>
+                                <option value="gemini-3.5-flash">Gemini 3.5 Flash [Next-Gen Intelligence & Vision ~1.4s • 250 RPD]</option>
+                                <option value="gemini-flash-lite-latest">Gemini Flash-Lite [Blazing Fast ~0.9s • High Quota 500 RPD]</option>
+                                <option value="gemini-2.5-flash">Gemini 2.5 Flash [High Precision ~1.5s • 20 RPD Free Limit]</option>
+                                <option value="gemini-2.5-pro">Gemini 2.5 Pro [Deep Math & Complex Logic ~3.5s • 20 RPD Free Limit]</option>
+                                <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview [Elite Reasoning ~4.5s • 20 RPD Free Limit]</option>
+                            </optgroup>
+                            <optgroup label="Groq LPUs (Requires Groq API Key)">
+                                <option value="llama-3.2-11b-vision-preview">Groq Llama 3.2 11B Vision [Blazing LPU Speed ~0.8s • 7,000 RPD]</option>
+                                <option value="llama-3.2-90b-vision-preview">
+                                    Groq Llama 3.2 90B Vision [High Accuracy Open Vision ~1.8s • 3,500 RPD]
+                                </option>
+                            </optgroup>
                         </select>
+
+                        ${this.renderActiveModelUsageCard()}
                     </div>
 
                     ${

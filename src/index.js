@@ -289,6 +289,24 @@ function setupStorageIpcHandlers() {
         }
     });
 
+    ipcMain.handle('storage:get-model-usage', async (event, model) => {
+        try {
+            return { success: true, data: storage.getModelUsage(model) };
+        } catch (error) {
+            console.error('Error getting model usage:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('storage:get-all-model-usages', async () => {
+        try {
+            return { success: true, data: storage.getAllModelUsages() };
+        } catch (error) {
+            console.error('Error getting all model usages:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
     // ============ CLEAR ALL ============
     ipcMain.handle('storage:clear-all', async () => {
         try {

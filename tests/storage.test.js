@@ -54,3 +54,41 @@ test('storage: credentials get and set correctly', () => {
     storage.setGroqApiKey('test_groq_api_key_abc');
     assert.strictEqual(storage.getGroqApiKey(), 'test_groq_api_key_abc');
 });
+
+test('storage: getModelUsage calculates remaining quota and usage accurately', () => {
+    const initialUsage = storage.getModelUsage('gemini-flash-latest');
+    assert.ok(initialUsage);
+    assert.strictEqual(initialUsage.dailyLimit, 250);
+    assert.ok(typeof initialUsage.usedToday === 'number');
+    assert.strictEqual(initialUsage.remaining, Math.max(0, 250 - initialUsage.usedToday));
+    assert.strictEqual(initialUsage.percentUsed + initialUsage.percentRemaining, 100);
+
+    const prevUsed = initialUsage.usedToday;
+    storage.incrementLimitCount('gemini-flash-latest');
+    const updatedUsage = storage.getModelUsage('gemini-flash-latest');
+    assert.strictEqual(updatedUsage.usedToday, prevUsed + 1);
+    assert.strictEqual(updatedUsage.remaining, Math.max(0, 250 - (prevUsed + 1)));
+});
+
+test('storage: getAllModelUsages returns all supported live models with speed and intelligence ratings', () => {
+    const allUsages = storage.getAllModelUsages();
+    assert.ok(allUsages);
+    const expectedModels = [
+        'gemini-flash-latest',
+        'gemini-3.5-flash',
+        'gemini-flash-lite-latest',
+        'gemini-2.5-flash',
+        'gemini-2.5-pro',
+        'gemini-3.1-pro-preview',
+        'llama-3.2-11b-vision-preview',
+        'llama-3.2-90b-vision-preview',
+    ];
+
+    for (const modelId of expectedModels) {
+        assert.ok(allUsages[modelId], `Model ${modelId} must exist in all usages`);
+        assert.ok(allUsages[modelId].meta.speedRating >= 1 && allUsages[modelId].meta.speedRating <= 5);
+        assert.ok(allUsages[modelId].meta.reasoningRating >= 1 && allUsages[modelId].meta.reasoningRating <= 5);
+        assert.ok(allUsages[modelId].dailyLimit > 0);
+        assert.strictEqual(allUsages[modelId].remaining, Math.max(0, allUsages[modelId].dailyLimit - allUsages[modelId].usedToday));
+    }
+});

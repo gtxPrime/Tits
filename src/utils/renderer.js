@@ -107,6 +107,14 @@ const storage = {
         const result = await ipcRenderer.invoke('storage:get-today-limits');
         return result.success ? result.data : { flash: { count: 0 }, flashLite: { count: 0 } };
     },
+    async getModelUsage(model) {
+        const result = await ipcRenderer.invoke('storage:get-model-usage', model);
+        return result.success ? result.data : null;
+    },
+    async getAllModelUsages() {
+        const result = await ipcRenderer.invoke('storage:get-all-model-usages');
+        return result.success ? result.data : {};
+    },
 };
 
 // Cache for preferences to avoid async calls in hot paths

@@ -154,85 +154,133 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
 
         let rawResponseText = '';
         let lastError = '';
+        const primaryModel = prefs.examVisionModel || 'gemini-flash-latest';
+        const isGroqPrimary = primaryModel.startsWith('llama');
 
-        // Attempt Gemini first if configured
-        if (apiKey) {
-            const ai = new GoogleGenAI({ apiKey: apiKey });
-            const primaryModel = prefs.examVisionModel || 'gemini-flash-latest';
-            const modelsToTry = [primaryModel, 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-2.5-flash'].filter(
-                Boolean
-            );
-            const tried = new Set();
-            let result = null;
-
-            for (const m of modelsToTry) {
-                if (tried.has(m)) continue;
-                tried.add(m);
-                try {
-                    console.log(`[ExamSolver] Calling Gemini model: ${m}`);
-                    const modelPromise = ai.models.generateContent({
-                        model: m,
-                        contents: [
-                            {
-                                inlineData: {
-                                    mimeType: 'image/jpeg',
-                                    data: capture.base64Data,
+        // Helper to query Groq Vision
+        const tryGroqVision = async modelToUse => {
+            if (!groqApiKey) return null;
+            console.log(`[ExamSolver] Calling Groq vision model: ${modelToUse}`);
+            const groqFetchPromise = fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${groqApiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: modelToUse,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: [
+                                { type: 'text', text: EXAM_SOLVER_PROMPT },
+                                {
+                                    type: 'image_url',
+                                    image_url: { url: `data:image/jpeg;base64,${capture.base64Data}` },
                                 },
-                            },
-                            { text: EXAM_SOLVER_PROMPT },
-                        ],
-                    });
-                    result = await callWithTimeout(modelPromise, 7000, `Model ${m} timed out after 7s`);
-                    if (result && result.text) break;
-                } catch (err) {
-                    console.warn(`[ExamSolver] Model ${m} failed:`, err.message);
-                    lastError = err.message || '';
-                }
-            }
+                            ],
+                        },
+                    ],
+                    temperature: 0.1,
+                }),
+            });
 
-            if (result && result.text) {
-                rawResponseText = result.text;
+            const response = await callWithTimeout(groqFetchPromise, 7000, `Groq model ${modelToUse} timed out after 7s`);
+            const data = await response.json();
+            if (data.choices?.[0]?.message?.content) {
+                storage.incrementLimitCount(modelToUse);
+                return data.choices[0].message.content;
+            } else if (data.error) {
+                throw new Error(data.error.message || 'Groq API error');
             }
-        }
+            return null;
+        };
 
-        // Automatic fallback to Groq Vision if Gemini failed or was not configured
-        if (!rawResponseText && groqApiKey) {
-            console.log('[ExamSolver] Attempting Groq vision fallback...');
-            try {
-                const groqFetchPromise = fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${groqApiKey}`,
-                        'Content-Type': 'application/json',
+        // Helper to query Gemini Vision
+        const tryGeminiVision = async modelToUse => {
+            if (!apiKey) return null;
+            const ai = new GoogleGenAI({ apiKey: apiKey });
+            console.log(`[ExamSolver] Calling Gemini model: ${modelToUse}`);
+            const modelPromise = ai.models.generateContent({
+                model: modelToUse,
+                contents: [
+                    {
+                        inlineData: {
+                            mimeType: 'image/jpeg',
+                            data: capture.base64Data,
+                        },
                     },
-                    body: JSON.stringify({
-                        model: 'llama-3.2-11b-vision-preview',
-                        messages: [
-                            {
-                                role: 'user',
-                                content: [
-                                    { type: 'text', text: EXAM_SOLVER_PROMPT },
-                                    {
-                                        type: 'image_url',
-                                        image_url: { url: `data:image/jpeg;base64,${capture.base64Data}` },
-                                    },
-                                ],
-                            },
-                        ],
-                        temperature: 0.1,
-                    }),
-                });
+                    { text: EXAM_SOLVER_PROMPT },
+                ],
+            });
+            const result = await callWithTimeout(modelPromise, 7000, `Model ${modelToUse} timed out after 7s`);
+            if (result && result.text) {
+                storage.incrementLimitCount(modelToUse);
+                return result.text;
+            }
+            return null;
+        };
 
-                const response = await callWithTimeout(groqFetchPromise, 7000, 'Groq request timed out after 7s');
-                const data = await response.json();
-                if (data.choices?.[0]?.message?.content) {
-                    rawResponseText = data.choices[0].message.content;
-                } else if (data.error) {
-                    lastError = data.error.message;
-                }
+        if (isGroqPrimary && groqApiKey) {
+            // User specifically selected a Groq model
+            try {
+                rawResponseText = await tryGroqVision(primaryModel);
             } catch (err) {
-                console.warn('[ExamSolver] Groq fallback failed:', err.message);
-                if (!lastError) lastError = err.message;
+                console.warn(`[ExamSolver] Groq model ${primaryModel} failed:`, err.message);
+                lastError = err.message;
+            }
+
+            if (!rawResponseText && primaryModel !== 'llama-3.2-11b-vision-preview') {
+                try {
+                    rawResponseText = await tryGroqVision('llama-3.2-11b-vision-preview');
+                } catch (err) {
+                    console.warn('[ExamSolver] Groq fallback failed:', err.message);
+                    if (!lastError) lastError = err.message;
+                }
+            }
+
+            // Fallback to Gemini if Groq failed and Gemini key is available
+            if (!rawResponseText && apiKey) {
+                const geminiFallbacks = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-flash-lite-latest'];
+                for (const m of geminiFallbacks) {
+                    try {
+                        rawResponseText = await tryGeminiVision(m);
+                        if (rawResponseText) break;
+                    } catch (err) {
+                        console.warn(`[ExamSolver] Gemini fallback ${m} failed:`, err.message);
+                        if (!lastError) lastError = err.message;
+                    }
+                }
+            }
+        } else {
+            // Gemini is primary
+            if (apiKey) {
+                const modelsToTry = [primaryModel, 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-2.5-flash'].filter(
+                    Boolean
+                );
+                const tried = new Set();
+                for (const m of modelsToTry) {
+                    if (tried.has(m)) continue;
+                    tried.add(m);
+                    try {
+                        rawResponseText = await tryGeminiVision(m);
+                        if (rawResponseText) break;
+                    } catch (err) {
+                        console.warn(`[ExamSolver] Model ${m} failed:`, err.message);
+                        lastError = err.message || '';
+                    }
+                }
+            }
+
+            // Fallback to Groq Vision if Gemini failed or no Gemini key
+            if (!rawResponseText && groqApiKey) {
+                console.log('[ExamSolver] Attempting Groq vision fallback...');
+                try {
+                    rawResponseText = await tryGroqVision('llama-3.2-11b-vision-preview');
+                } catch (err) {
+                    console.warn('[ExamSolver] Groq fallback failed:', err.message);
+                    if (!lastError) lastError = err.message;
+                }
             }
         }
 

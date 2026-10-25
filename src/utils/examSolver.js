@@ -9,9 +9,9 @@ You have been provided with an image containing an exam question (centered aroun
 Analyze the question carefully and determine:
 1. Is it a Multiple Choice Question (MCQ) or a Short Answer / Numerical / Coding question?
 2. If MCQ:
-   - Identify all options (A, B, C, D, E).
+   - Identify all options (e.g. A through Z).
    - Find the SINGLE correct answer.
-   - Extract the correct option letter ('A', 'B', 'C', 'D', or 'E').
+   - Extract the correct option letter ('A' through 'Z').
 3. If Short Answer / Coding:
    - Provide the concise, exact answer or code snippet.
    - Set letter to null.
@@ -30,8 +30,15 @@ CRITICAL: Return ONLY valid JSON with this exact schema (no markdown fences, no 
 function letterToNumber(letter) {
     if (!letter) return 0;
     const char = letter.toString().trim().toUpperCase()[0];
-    const map = { A: 1, B: 2, C: 3, D: 4, E: 5 };
-    return map[char] || 0;
+    const code = char.charCodeAt(0);
+    if (code >= 65 && code <= 90) {
+        return code - 64; // A=1, B=2, ... Z=26
+    }
+    const num = parseInt(char, 10);
+    if (!isNaN(num) && num >= 1 && num <= 9) {
+        return num;
+    }
+    return 0;
 }
 
 let isSolving = false;
@@ -89,7 +96,7 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
         if (apiKey) {
             const ai = new GoogleGenAI({ apiKey: apiKey });
             const primaryModel = prefs.examVisionModel || 'gemini-2.5-flash';
-            const modelsToTry = [primaryModel, 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+            const modelsToTry = [primaryModel, 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-3.8-flash'];
             const tried = new Set();
             let result = null;
 
@@ -167,7 +174,7 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
             parsed = JSON.parse(cleaned);
         } catch (e) {
             console.warn('[ExamSolver] JSON parse failed, attempting regex extraction');
-            const letterMatch = rawResponseText.match(/\b([A-E])\b/i);
+            const letterMatch = rawResponseText.match(/\b([A-Z])\b/i);
             parsed = {
                 type: letterMatch ? 'mcq' : 'short',
                 letter: letterMatch ? letterMatch[1].toUpperCase() : null,

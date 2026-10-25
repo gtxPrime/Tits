@@ -8,17 +8,19 @@ test('examSolver: letterToNumber correctly maps valid letters', () => {
     assert.strictEqual(letterToNumber('C'), 3);
     assert.strictEqual(letterToNumber('D'), 4);
     assert.strictEqual(letterToNumber('E'), 5);
+    assert.strictEqual(letterToNumber('F'), 6);
+    assert.strictEqual(letterToNumber('Z'), 26);
 });
 
 test('examSolver: letterToNumber handles lowercase, whitespace, and edge cases', () => {
     assert.strictEqual(letterToNumber('a'), 1);
     assert.strictEqual(letterToNumber('  c  '), 3);
     assert.strictEqual(letterToNumber('D) Option D'), 4);
+    assert.strictEqual(letterToNumber('z'), 26);
     assert.strictEqual(letterToNumber(''), 0);
     assert.strictEqual(letterToNumber(null), 0);
     assert.strictEqual(letterToNumber(undefined), 0);
-    assert.strictEqual(letterToNumber('Z'), 0);
-    assert.strictEqual(letterToNumber('123'), 0);
+    assert.strictEqual(letterToNumber('!'), 0);
 });
 
 test('examSolver: JSON schema parsing and extraction simulation', () => {
@@ -46,10 +48,10 @@ test('examSolver: markdown codeblock cleaning handles markdown formatted respons
 });
 
 test('examSolver: regex fallback handles unformatted text responses', () => {
-    const textResponse = 'The correct choice is B because mitochondria is the powerhouse of the cell.';
-    const letterMatch = textResponse.match(/\b([A-E])\b/i);
+    const textResponse = 'The correct choice is H because mitochondria is the powerhouse of the cell.';
+    const letterMatch = textResponse.match(/\b([A-Z])\b/i);
 
     assert.ok(letterMatch);
-    assert.strictEqual(letterMatch[1].toUpperCase(), 'B');
-    assert.strictEqual(letterToNumber(letterMatch[1]), 2);
+    assert.strictEqual(letterMatch[1].toUpperCase(), 'H');
+    assert.strictEqual(letterToNumber(letterMatch[1]), 8);
 });

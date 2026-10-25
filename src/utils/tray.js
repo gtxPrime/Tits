@@ -7,14 +7,13 @@ let mainWindowRef = null;
 let onSolveCallback = null;
 
 /**
- * Generate a dynamic 32x32 PNG buffer for tray icon
- * @param {string|null} letter - 'A', 'B', 'C', 'D', 'E' or null for default icon
+ * Generate a dynamic 32x32 SVG data URL for tray icon
+ * @param {string|null} letter - 'A' through 'Z', '0' through '9', or null for default icon
  */
 function createTrayIconDataUrl(letter = null) {
-    // Generate a simple SVG and convert to data URL
     let svgContent = '';
-    if (letter && ['A', 'B', 'C', 'D', 'E'].includes(letter.toUpperCase())) {
-        const char = letter.toUpperCase();
+    if (letter && /[A-Z0-9]/i.test(letter.toString().trim())) {
+        const char = letter.toString().trim().toUpperCase()[0];
         // Emerald/Cyan high-contrast badge with the letter
         svgContent = `
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
@@ -81,16 +80,17 @@ function updateTrayMenu() {
     tray.setContextMenu(contextMenu);
 }
 
-const { createLetterBmpBuffer } = require('./bmpBadge');
+const { createLetterBitmap } = require('./bmpBadge');
 
 function getTrayIcon(letter = null) {
-    if (letter && ['A', 'B', 'C', 'D', 'E'].includes(letter.toUpperCase())) {
+    if (letter && /[A-Z0-9]/i.test(letter.toString().trim())) {
         try {
-            const bmp = createLetterBmpBuffer(letter.toUpperCase());
-            const img = nativeImage.createFromBuffer(bmp);
+            const char = letter.toString().trim().toUpperCase()[0];
+            const rawBitmap = createLetterBitmap(char);
+            const img = nativeImage.createFromBitmap(rawBitmap, { width: 32, height: 32 });
             if (!img.isEmpty()) return img;
         } catch (e) {
-            console.warn('[Tray] Error creating letter BMP:', e);
+            console.warn('[Tray] Error creating letter badge from bitmap:', e);
         }
     }
 

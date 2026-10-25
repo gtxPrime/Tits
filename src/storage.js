@@ -16,7 +16,7 @@ const DEFAULT_CONFIG = {
 };
 
 const DEFAULT_CREDENTIALS = {
-    apiKey: 'AIzaSyMockKey_SampleForTesting_98765',
+    apiKey: '',
     groqApiKey: '',
 };
 
@@ -214,7 +214,7 @@ function setCredentials(credentials) {
 }
 
 function getApiKey() {
-    return getCredentials().apiKey || 'AIzaSyMockKey_SampleForTesting_98765';
+    return getCredentials().apiKey || '';
 }
 
 function setApiKey(apiKey) {

@@ -1,110 +1,397 @@
-function createLetterBmpBuffer(letter) {
+/**
+ * 5x7 Pixel Font Matrix for All Alphanumeric Characters (A-Z, 0-9)
+ */
+const GLYPHS_5x7 = {
+    A: [
+        [0, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+    ],
+    B: [
+        [1, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 0],
+    ],
+    C: [
+        [0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [0, 1, 1, 1, 1],
+    ],
+    D: [
+        [1, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 0],
+    ],
+    E: [
+        [1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1],
+    ],
+    F: [
+        [1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+    ],
+    G: [
+        [0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 1, 1, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 1],
+    ],
+    H: [
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+    ],
+    I: [
+        [1, 1, 1, 1, 1],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [1, 1, 1, 1, 1],
+    ],
+    J: [
+        [0, 0, 1, 1, 1],
+        [0, 0, 0, 1, 0],
+        [0, 0, 0, 1, 0],
+        [0, 0, 0, 1, 0],
+        [1, 0, 0, 1, 0],
+        [1, 0, 0, 1, 0],
+        [0, 1, 1, 0, 0],
+    ],
+    K: [
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 1, 0],
+        [1, 0, 1, 0, 0],
+        [1, 1, 0, 0, 0],
+        [1, 0, 1, 0, 0],
+        [1, 0, 0, 1, 0],
+        [1, 0, 0, 0, 1],
+    ],
+    L: [
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1],
+    ],
+    M: [
+        [1, 0, 0, 0, 1],
+        [1, 1, 0, 1, 1],
+        [1, 0, 1, 0, 1],
+        [1, 0, 1, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+    ],
+    N: [
+        [1, 0, 0, 0, 1],
+        [1, 1, 0, 0, 1],
+        [1, 0, 1, 0, 1],
+        [1, 0, 0, 1, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+    ],
+    O: [
+        [0, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0],
+    ],
+    P: [
+        [1, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+    ],
+    Q: [
+        [0, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 1, 0, 1],
+        [1, 0, 0, 1, 0],
+        [0, 1, 1, 0, 1],
+    ],
+    R: [
+        [1, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 0],
+        [1, 0, 1, 0, 0],
+        [1, 0, 0, 1, 0],
+        [1, 0, 0, 0, 1],
+    ],
+    S: [
+        [0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0],
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0],
+    ],
+    T: [
+        [1, 1, 1, 1, 1],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+    ],
+    U: [
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0],
+    ],
+    V: [
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 0, 1, 0],
+        [0, 1, 0, 1, 0],
+        [0, 0, 1, 0, 0],
+    ],
+    W: [
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 1, 0, 1],
+        [1, 0, 1, 0, 1],
+        [1, 1, 0, 1, 1],
+        [1, 0, 0, 0, 1],
+    ],
+    X: [
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 0, 1, 0],
+        [0, 0, 1, 0, 0],
+        [0, 1, 0, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+    ],
+    Y: [
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 0, 1, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+    ],
+    Z: [
+        [1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 1, 0],
+        [0, 0, 1, 0, 0],
+        [0, 1, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1],
+    ],
+    0: [
+        [0, 1, 1, 1, 0],
+        [1, 0, 0, 1, 1],
+        [1, 0, 1, 0, 1],
+        [1, 1, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0],
+    ],
+    1: [
+        [0, 0, 1, 0, 0],
+        [0, 1, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 1, 1, 1, 0],
+    ],
+    2: [
+        [0, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [0, 0, 0, 0, 1],
+        [0, 0, 1, 1, 0],
+        [0, 1, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1],
+    ],
+    3: [
+        [1, 1, 1, 1, 0],
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0],
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 0],
+    ],
+    4: [
+        [0, 0, 0, 1, 0],
+        [0, 0, 1, 1, 0],
+        [0, 1, 0, 1, 0],
+        [1, 0, 0, 1, 0],
+        [1, 1, 1, 1, 1],
+        [0, 0, 0, 1, 0],
+        [0, 0, 0, 1, 0],
+    ],
+    5: [
+        [1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0],
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0],
+    ],
+    6: [
+        [0, 1, 1, 1, 0],
+        [1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0],
+    ],
+    7: [
+        [1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 1, 0],
+        [0, 0, 1, 0, 0],
+        [0, 1, 0, 0, 0],
+        [0, 1, 0, 0, 0],
+        [0, 1, 0, 0, 0],
+    ],
+    8: [
+        [0, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0],
+    ],
+    9: [
+        [0, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 1],
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0],
+    ],
+};
+
+/**
+ * Generate a 32x32 raw BGRA pixel buffer for Electron nativeImage.createFromBitmap
+ * @param {string} letter - Character 'A' through 'Z' or '0' through '9'
+ * @returns {Buffer} 32*32*4 bytes BGRA buffer
+ */
+function createLetterBitmap(letter) {
     const width = 32;
     const height = 32;
-    const pixelBytes = width * height * 4;
-    const fileSize = 54 + pixelBytes;
+    const buffer = Buffer.alloc(width * height * 4); // BGRA
 
-    const buffer = Buffer.alloc(fileSize);
+    const char = (letter || 'A').toString().trim().toUpperCase()[0];
+    const glyph = GLYPHS_5x7[char] || GLYPHS_5x7['A'];
 
-    // Bitmap File Header (14 bytes)
-    buffer.write('BM', 0); // Signature
-    buffer.writeUInt32LE(fileSize, 2); // File size
-    buffer.writeUInt16LE(0, 6); // Reserved
-    buffer.writeUInt16LE(0, 8); // Reserved
-    buffer.writeUInt32LE(54, 10); // Offset to pixel data
-
-    // DIB Header (BITMAPINFOHEADER - 40 bytes)
-    buffer.writeUInt32LE(40, 14); // Header size
-    buffer.writeInt32LE(width, 18); // Width
-    buffer.writeInt32LE(-height, 22); // Height (negative for top-down)
-    buffer.writeUInt16LE(1, 26); // Planes
-    buffer.writeUInt16LE(32, 28); // Bits per pixel (32-bit BGRA)
-    buffer.writeUInt32LE(0, 30); // Compression (BI_RGB)
-    buffer.writeUInt32LE(pixelBytes, 34); // Image size
-    buffer.writeInt32LE(2835, 38); // X pixels per meter (72 DPI)
-    buffer.writeInt32LE(2835, 42); // Y pixels per meter (72 DPI)
-    buffer.writeUInt32LE(0, 46); // Total colors
-    buffer.writeUInt32LE(0, 50); // Important colors
-
-    // Simple 5x7 font bitmaps for A, B, C, D, E
-    const glyphs = {
-        A: [
-            [0, 1, 1, 0],
-            [1, 0, 0, 1],
-            [1, 1, 1, 1],
-            [1, 0, 0, 1],
-            [1, 0, 0, 1],
-        ],
-        B: [
-            [1, 1, 1, 0],
-            [1, 0, 0, 1],
-            [1, 1, 1, 0],
-            [1, 0, 0, 1],
-            [1, 1, 1, 0],
-        ],
-        C: [
-            [0, 1, 1, 1],
-            [1, 0, 0, 0],
-            [1, 0, 0, 0],
-            [1, 0, 0, 0],
-            [0, 1, 1, 1],
-        ],
-        D: [
-            [1, 1, 1, 0],
-            [1, 0, 0, 1],
-            [1, 0, 0, 1],
-            [1, 0, 0, 1],
-            [1, 1, 1, 0],
-        ],
-        E: [
-            [1, 1, 1, 1],
-            [1, 0, 0, 0],
-            [1, 1, 1, 0],
-            [1, 0, 0, 0],
-            [1, 1, 1, 1],
-        ],
-    };
-
-    const glyph = glyphs[letter ? letter.toUpperCase() : ''] || null;
-
-    // Fill pixels (BGRA format)
+    // 5x7 glyph scaled 3x -> 15px wide, 21px high
+    // Centered: x=8..22 (15px), y=5..25 (21px)
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
-            const offset = 54 + (y * width + x) * 4;
+            const offset = (y * width + x) * 4;
 
-            // Outer rounded rect border check
-            const inBadge = x >= 2 && x <= 29 && y >= 2 && y <= 29;
-            const inCorner = (x <= 4 || x >= 27) && (y <= 4 || y >= 27);
+            // Rounded badge geometry
+            const inBadge = x >= 1 && x <= 30 && y >= 1 && y <= 30;
+            const inCorner1 = (x <= 3 || x >= 28) && (y <= 3 || y >= 28);
+            const inCorner2 = (x <= 2 || x >= 29) && (y <= 4 || y >= 27);
+            const inCorner3 = (x <= 4 || x >= 27) && (y <= 2 || y >= 29);
 
-            if (inBadge && !inCorner) {
-                // Background of badge: Emerald #10b981 (BGRA: 129, 185, 16, 255)
-                let b = 129,
-                    g = 185,
-                    r = 16,
-                    a = 255;
+            if (inBadge && !inCorner1 && !inCorner2 && !inCorner3) {
+                // Background: Emerald badge (#10b981) -> BGRA: 129, 185, 16, 255
+                // Dark emerald accent border for maximum contrast on light and dark taskbars
+                const isBorder =
+                    x === 1 ||
+                    x === 30 ||
+                    y === 1 ||
+                    y === 30 ||
+                    (x <= 3 && y <= 5) ||
+                    (x >= 28 && y <= 5) ||
+                    (x <= 3 && y >= 26) ||
+                    (x >= 28 && y >= 26);
 
-                // Scale glyph up (4x) in center: glyph is 4x5 -> rendered as 16x20 at x=8, y=6
-                if (glyph) {
-                    const gx = Math.floor((x - 8) / 4);
-                    const gy = Math.floor((y - 6) / 4);
-                    if (gy >= 0 && gy < glyph.length && gx >= 0 && gx < glyph[gy].length) {
-                        if (glyph[gy][gx]) {
-                            // White text: #ffffff
-                            b = 255;
-                            g = 255;
-                            r = 255;
-                            a = 255;
-                        }
+                let b = isBorder ? 60 : 129;
+                let g = isBorder ? 120 : 185;
+                let r = isBorder ? 10 : 16;
+                let a = 255;
+
+                // Render glyph: 15x21 centered at x=8, y=5
+                const gx = Math.floor((x - 8) / 3);
+                const gy = Math.floor((y - 5) / 3);
+
+                if (gy >= 0 && gy < 7 && gx >= 0 && gx < 5) {
+                    if (glyph[gy][gx]) {
+                        // High-contrast pure white text
+                        b = 255;
+                        g = 255;
+                        r = 255;
+                        a = 255;
                     }
                 }
 
-                buffer[offset] = b;
+                buffer[offset + 0] = b;
                 buffer[offset + 1] = g;
                 buffer[offset + 2] = r;
                 buffer[offset + 3] = a;
             } else {
-                // Transparent pixel outside badge
-                buffer[offset] = 0;
+                // Transparent
+                buffer[offset + 0] = 0;
                 buffer[offset + 1] = 0;
                 buffer[offset + 2] = 0;
                 buffer[offset + 3] = 0;
@@ -115,4 +402,47 @@ function createLetterBmpBuffer(letter) {
     return buffer;
 }
 
-module.exports = { createLetterBmpBuffer };
+/**
+ * Generate a complete 32x32 BMP file buffer (includes BMP + DIB headers)
+ * @param {string} letter
+ * @returns {Buffer} Complete .bmp file buffer
+ */
+function createLetterBmpBuffer(letter) {
+    const width = 32;
+    const height = 32;
+    const pixelBytes = width * height * 4;
+    const fileSize = 54 + pixelBytes;
+
+    const buffer = Buffer.alloc(fileSize);
+
+    // Bitmap File Header (14 bytes)
+    buffer.write('BM', 0);
+    buffer.writeUInt32LE(fileSize, 2);
+    buffer.writeUInt16LE(0, 6);
+    buffer.writeUInt16LE(0, 8);
+    buffer.writeUInt32LE(54, 10);
+
+    // DIB Header (BITMAPINFOHEADER - 40 bytes)
+    buffer.writeUInt32LE(40, 14);
+    buffer.writeInt32LE(width, 18);
+    buffer.writeInt32LE(-height, 22); // Top-down
+    buffer.writeUInt16LE(1, 26);
+    buffer.writeUInt16LE(32, 28);
+    buffer.writeUInt32LE(0, 30);
+    buffer.writeUInt32LE(pixelBytes, 34);
+    buffer.writeInt32LE(2835, 38);
+    buffer.writeInt32LE(2835, 42);
+    buffer.writeUInt32LE(0, 46);
+    buffer.writeUInt32LE(0, 50);
+
+    const rawPixels = createLetterBitmap(letter);
+    rawPixels.copy(buffer, 54);
+
+    return buffer;
+}
+
+module.exports = {
+    createLetterBitmap,
+    createLetterBmpBuffer,
+    GLYPHS_5x7,
+};

@@ -1062,7 +1062,9 @@ export class TitsApp extends LitElement {
                         </div>
                         <div style="display:flex;flex-direction:column;gap:1px;min-width:0;">
                             <h1 style="font-size:15px;font-weight:800;letter-spacing:0.5px;color:#ffffff;line-height:1.1;">TITS</h1>
-                            <div style="font-size:9.5px;color:#94a3b8;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Everyone needs TITS</div>
+                            <div style="font-size:9.5px;color:#94a3b8;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                Everyone needs TITS
+                            </div>
                         </div>
                     </div>
                 </div>

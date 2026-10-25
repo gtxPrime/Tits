@@ -1166,7 +1166,7 @@ export class CustomizeView extends LitElement {
                             ${icons.zap(15)}
                             <span>Test Mode (Exam Solver)</span>
                         </div>
-                        <div class="mode-card-desc">Cursor region capture, system tray badge output [A-E], earbud blips, and screen edge pulse.</div>
+                        <div class="mode-card-desc">Cursor region capture, system tray badge output [A-Z], earbud blips, and screen edge pulse.</div>
                     </button>
 
                     <button
@@ -1223,6 +1223,8 @@ export class CustomizeView extends LitElement {
                                 @input=${e => {
                                     this.apiKey = e.target.value.trim();
                                 }}
+                                @change=${() => this.handleSaveGeminiKey()}
+                                @blur=${() => this.handleSaveGeminiKey()}
                             />
                             <button
                                 class="icon-btn"
@@ -1262,6 +1264,8 @@ export class CustomizeView extends LitElement {
                                 @input=${e => {
                                     this.groqApiKey = e.target.value.trim();
                                 }}
+                                @change=${() => this.handleSaveGroqKey()}
+                                @blur=${() => this.handleSaveGroqKey()}
                             />
                             <button
                                 class="icon-btn"

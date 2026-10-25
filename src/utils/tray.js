@@ -87,30 +87,18 @@ function getTrayIcon(letter = null) {
     if (letter && /[A-Z0-9]/i.test(letter.toString().trim())) {
         const char = letter.toString().trim().toUpperCase()[0];
 
-        // 1. On Windows, native .ico is required by Windows Shell to prevent transparency loss and update bugs
-        if (process.platform === 'win32') {
-            const icoPath = path.join(__dirname, `../assets/tray_icons/badge_${char}.ico`);
-            if (fs.existsSync(icoPath)) {
-                try {
-                    const img = nativeImage.createFromPath(icoPath);
-                    if (!img.isEmpty()) return img;
-                } catch (e) {}
-            }
-        }
-
-        // 2. On macOS / Linux or if ICO absent: load pre-rendered 32x32 PNG badge
+        // 1. Prioritize pre-rendered 32x32 PNG badge (pixel-perfect 32x32 on Windows, macOS, and Linux)
         const pngPath = path.join(__dirname, `../assets/tray_icons/badge_${char}.png`);
         if (fs.existsSync(pngPath)) {
             try {
-                const buf = fs.readFileSync(pngPath);
-                const img = nativeImage.createFromBuffer(buf);
+                const img = nativeImage.createFromPath(pngPath);
                 if (!img.isEmpty()) return img;
             } catch (e) {
-                console.warn('[Tray] Failed to load PNG badge buffer:', e);
+                console.warn('[Tray] Failed to load PNG badge:', e);
             }
         }
 
-        // 3. Fallback to native in-memory PNG buffer
+        // 2. Fallback to native in-memory PNG buffer
         try {
             const pngBuf = createLetterPngBuffer(char);
             const img = nativeImage.createFromBuffer(pngBuf);
@@ -119,7 +107,7 @@ function getTrayIcon(letter = null) {
             console.warn('[Tray] Error creating letter badge from PNG:', e);
         }
 
-        // 4. Fallback to raw bitmap if PNG fails
+        // 3. Fallback to raw bitmap if PNG fails
         try {
             const rawBitmap = createLetterBitmap(char);
             const img = nativeImage.createFromBitmap(rawBitmap, { width: 32, height: 32 });
@@ -127,23 +115,11 @@ function getTrayIcon(letter = null) {
         } catch (e) {}
     }
 
-    // Default idle icon: on Windows, prioritize native badge_T.ico
-    if (process.platform === 'win32') {
-        const idleIco = path.join(__dirname, '../assets/tray_icons/badge_T.ico');
-        if (fs.existsSync(idleIco)) {
-            try {
-                const img = nativeImage.createFromPath(idleIco);
-                if (!img.isEmpty()) return img;
-            } catch (e) {}
-        }
-    }
-
-    // Idle PNG fallback for macOS / Linux
+    // Default idle icon: use high-contrast 32x32 brand badge (badge_T.png)
     const idleBadgePng = path.join(__dirname, '../assets/tray_icons/badge_T.png');
     if (fs.existsSync(idleBadgePng)) {
         try {
-            const buf = fs.readFileSync(idleBadgePng);
-            const img = nativeImage.createFromBuffer(buf);
+            const img = nativeImage.createFromPath(idleBadgePng);
             if (!img.isEmpty()) return img;
         } catch (e) {}
     }

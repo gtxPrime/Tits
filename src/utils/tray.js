@@ -80,12 +80,27 @@ function updateTrayMenu() {
     tray.setContextMenu(contextMenu);
 }
 
+const fs = require('fs');
 const { createLetterBitmap, createLetterPngBuffer } = require('./bmpBadge');
 
 function getTrayIcon(letter = null) {
     if (letter && /[A-Z0-9]/i.test(letter.toString().trim())) {
+        const char = letter.toString().trim().toUpperCase()[0];
+
+        // 1. Prioritize pre-rendered persistent .ico (Windows) or .png (macOS/Linux)
+        const ext = process.platform === 'win32' ? 'ico' : 'png';
+        const iconDiskPath = path.join(__dirname, `../assets/tray_icons/badge_${char}.${ext}`);
+        if (fs.existsSync(iconDiskPath)) {
+            try {
+                const img = nativeImage.createFromPath(iconDiskPath);
+                if (!img.isEmpty()) return img;
+            } catch (e) {
+                console.warn('[Tray] Failed to load disk badge icon:', e);
+            }
+        }
+
+        // 2. Fallback to native PNG buffer in memory
         try {
-            const char = letter.toString().trim().toUpperCase()[0];
             const pngBuf = createLetterPngBuffer(char);
             const img = nativeImage.createFromBuffer(pngBuf);
             if (!img.isEmpty()) return img;
@@ -93,17 +108,16 @@ function getTrayIcon(letter = null) {
             console.warn('[Tray] Error creating letter badge from PNG:', e);
         }
 
-        // Fallback to raw bitmap if PNG fails
+        // 3. Fallback to raw bitmap if PNG fails
         try {
-            const char = letter.toString().trim().toUpperCase()[0];
             const rawBitmap = createLetterBitmap(char);
             const img = nativeImage.createFromBitmap(rawBitmap, { width: 32, height: 32 });
             if (!img.isEmpty()) return img;
         } catch (e) {}
     }
 
-    const iconPath = process.platform === 'win32' ? path.join(__dirname, '../assets/logo.ico') : path.join(__dirname, '../assets/logo.png');
-    return nativeImage.createFromPath(iconPath);
+    const defaultIconPath = process.platform === 'win32' ? path.join(__dirname, '../assets/logo.ico') : path.join(__dirname, '../assets/logo.png');
+    return nativeImage.createFromPath(defaultIconPath);
 }
 
 function initTray(mainWindow, onSolve) {
@@ -113,10 +127,13 @@ function initTray(mainWindow, onSolve) {
     try {
         const icon = getTrayIcon(null);
         tray = new Tray(icon);
+        // Retain permanent global reference to prevent V8 garbage collection dropping the HICON
+        global.__tits_tray = tray;
 
         tray.setToolTip('TITS - Test Intelligence & Tutoring System (BYOK)');
         updateTrayMenu();
 
+        // Single click toggles window visibility between stealth hide and display
         tray.on('click', () => {
             if (!mainWindowRef || mainWindowRef.isDestroyed()) return;
             if (mainWindowRef.isVisible()) {
@@ -124,10 +141,6 @@ function initTray(mainWindow, onSolve) {
             } else {
                 mainWindowRef.showInactive();
             }
-        });
-
-        tray.on('double-click', () => {
-            if (onSolveCallback) onSolveCallback();
         });
 
         console.log('[Tray] Initialized successfully');
@@ -142,8 +155,10 @@ function setTrayAnswer(letter, summary = '') {
     currentAnswerLetter = letter ? letter.toUpperCase() : null;
     const icon = getTrayIcon(currentAnswerLetter);
 
-    // 1. Update System Tray Icon & Tooltip
-    if (tray) {
+    // Update System Tray Icon & Tooltip exclusively.
+    // Do NOT alter the main window's taskbar icon, title, overlay badge, or flash frame
+    // because the main window is hidden in stealth mode.
+    if (tray && !tray.isDestroyed()) {
         try {
             tray.setImage(icon);
 
@@ -159,44 +174,15 @@ function setTrayAnswer(letter, summary = '') {
             console.error('[Tray] Error updating tray answer:', err);
         }
     }
-
-    // 2. Update Windows Taskbar Window (Icon, Overlay Badge, Title, and Thumbnail Tooltip)
-    if (mainWindowRef && !mainWindowRef.isDestroyed()) {
-        try {
-            if (currentAnswerLetter) {
-                // A. Window Title visible in Taskbar button / preview
-                mainWindowRef.setTitle(`[Option ${currentAnswerLetter}] ${summary ? summary.slice(0, 60) : 'Solved'} — TITS`);
-
-                // B. Taskbar App Icon
-                mainWindowRef.setIcon(icon);
-
-                // C. Windows Taskbar Overlay Badge (shows letter badge on taskbar button)
-                if (process.platform === 'win32') {
-                    mainWindowRef.setOverlayIcon(icon, `Option ${currentAnswerLetter}`);
-                    mainWindowRef.setThumbnailToolTip(`Option [${currentAnswerLetter}]: ${summary || ''}`);
-                }
-
-                // D. Flash Taskbar Button so user spots the answer immediately
-                mainWindowRef.flashFrame(true);
-            } else {
-                mainWindowRef.setTitle('TITS - Test Intelligence & Tutoring System');
-                const defaultIcon = getTrayIcon(null);
-                mainWindowRef.setIcon(defaultIcon);
-                if (process.platform === 'win32') {
-                    mainWindowRef.setOverlayIcon(null, '');
-                    mainWindowRef.setThumbnailToolTip('TITS - Test Intelligence & Tutoring System');
-                }
-            }
-        } catch (err) {
-            console.error('[Tray] Error updating taskbar window:', err);
-        }
-    }
 }
 
 function destroyTray() {
     if (tray) {
-        tray.destroy();
+        try {
+            tray.destroy();
+        } catch (e) {}
         tray = null;
+        global.__tits_tray = null;
     }
 }
 

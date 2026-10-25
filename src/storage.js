@@ -43,7 +43,7 @@ const DEFAULT_PREFERENCES = {
     clickHoldDuration: 5,
     enableTrayOutput: true,
     enableHudOutput: true,
-    enableScreenPulse: true,
+    enableScreenPulse: false,
     enableAudioBeeps: true,
     screenPulseColor: '#06b6d4',
     screenPulseDuration: 800,

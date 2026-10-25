@@ -1141,14 +1141,60 @@ const tits = {
 };
 
 // In-window keyboard shortcuts listener (ensures shortcuts fire even when window has input focus)
-window.addEventListener('keydown', e => {
+let cachedSolveKeybind = null;
+async function getActiveSolveKeybind() {
+    if (cachedSolveKeybind) return cachedSolveKeybind;
+    try {
+        if (window.tits && window.tits.storage && window.tits.storage.getKeybinds) {
+            const kb = await window.tits.storage.getKeybinds();
+            if (kb && kb.solveExam) {
+                cachedSolveKeybind = kb.solveExam;
+                return cachedSolveKeybind;
+            }
+        }
+    } catch (e) {}
+    return isMacOS ? 'Alt+Cmd+Q' : 'Ctrl+Alt+Q';
+}
+
+function matchesKeybind(e, keybindStr) {
+    if (!keybindStr) return false;
+    const parts = keybindStr
+        .toLowerCase()
+        .split('+')
+        .map(s => s.trim());
+    const needsCtrl = parts.includes('ctrl') || parts.includes('control');
+    const needsCmd = parts.includes('cmd') || parts.includes('command') || parts.includes('commandorcontrol');
+    const needsAlt = parts.includes('alt') || parts.includes('option');
+    const needsShift = parts.includes('shift');
+
+    const hasCtrlOrCmd = isMacOS ? e.metaKey : e.ctrlKey;
+    if (needsCtrl || needsCmd) {
+        if (!hasCtrlOrCmd) return false;
+    } else {
+        if (e.ctrlKey || e.metaKey) return false;
+    }
+
+    if (needsAlt !== e.altKey) return false;
+    if (needsShift !== e.shiftKey) return false;
+
+    const mainKey = parts.filter(
+        p => !['ctrl', 'control', 'cmd', 'command', 'commandorcontrol', 'cmdorctrl', 'alt', 'option', 'shift'].includes(p)
+    )[0];
+    if (!mainKey) return false;
+
+    return e.key.toLowerCase() === mainKey.toLowerCase();
+}
+
+window.addEventListener('keydown', async e => {
     // Avoid triggering when user is typing in a text input or textarea
     const target = e.composedPath ? e.composedPath()[0] : e.target;
     const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
     const isCtrlOrCmd = e.ctrlKey || e.metaKey;
 
-    // Quick Exam Solve (Ctrl+Alt+Q)
-    if (isCtrlOrCmd && e.altKey && (e.key === 'q' || e.key === 'Q')) {
+    // Quick Exam Solve (Checks configured key combination from settings, default Ctrl+Alt+Q)
+    const configuredSolve = await getActiveSolveKeybind();
+    const isDefaultSolve = isCtrlOrCmd && e.altKey && (e.key === 'q' || e.key === 'Q');
+    if (isDefaultSolve || matchesKeybind(e, configuredSolve)) {
         e.preventDefault();
         tits.solveExam();
         return;

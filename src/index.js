@@ -34,13 +34,6 @@ app.whenReady().then(async () => {
     createMainWindow();
     initTray(mainWindow, () => solveCurrentExamQuestion(mainWindow));
 
-    const prefs = storage.getPreferences() || {};
-    if (prefs.examTriggerMode === 'click_hold' || prefs.examTriggerMode === 'both') {
-        startClickHoldMonitor(prefs.clickHoldDuration || 5, () => {
-            solveCurrentExamQuestion(mainWindow);
-        });
-    }
-
     try {
         setupGeminiIpcHandlers(geminiSessionRef);
     } catch (e) {
@@ -221,6 +214,9 @@ function setupStorageIpcHandlers() {
     ipcMain.handle('storage:set-keybinds', async (event, keybinds) => {
         try {
             storage.setKeybinds(keybinds);
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                updateGlobalShortcuts(keybinds, mainWindow, sendToRenderer, geminiSessionRef);
+            }
             return { success: true };
         } catch (error) {
             console.error('Error setting keybinds:', error);

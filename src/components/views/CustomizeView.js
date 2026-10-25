@@ -9,8 +9,26 @@ export class CustomizeView extends LitElement {
             :host {
                 display: block;
                 width: 100%;
+                height: 100%;
+                overflow-y: auto;
+                overflow-x: hidden;
                 background: #0d0e13;
                 color: #f3f4f6;
+                scrollbar-gutter: stable;
+            }
+
+            :host::-webkit-scrollbar {
+                width: 8px;
+            }
+            :host::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            :host::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 999px;
+            }
+            :host::-webkit-scrollbar-thumb:hover {
+                background: rgba(250, 204, 21, 0.4);
             }
 
             .m3-container {
@@ -525,6 +543,7 @@ export class CustomizeView extends LitElement {
         examCaptureRegion: { type: String },
         clickHoldDuration: { type: Number },
         enableTrayOutput: { type: Boolean },
+        transparentIdleTray: { type: Boolean },
         enableHudOutput: { type: Boolean },
         enableScreenPulse: { type: Boolean },
         enableAudioBeeps: { type: Boolean },
@@ -576,6 +595,7 @@ export class CustomizeView extends LitElement {
         this.cursorCropWidth = 850;
         this.cursorCropHeight = 600;
         this.enableTrayOutput = true;
+        this.transparentIdleTray = false;
         this.enableHudOutput = true;
         this.enableScreenPulse = true;
         this.enableAudioBeeps = true;
@@ -617,6 +637,7 @@ export class CustomizeView extends LitElement {
             this.cursorCropWidth = prefs.cursorCropWidth || 850;
             this.cursorCropHeight = prefs.cursorCropHeight || 600;
             this.enableTrayOutput = prefs.enableTrayOutput !== false;
+            this.transparentIdleTray = prefs.transparentIdleTray === true;
             this.enableHudOutput = prefs.enableHudOutput !== false;
             this.enableScreenPulse = prefs.enableScreenPulse !== false;
             this.enableAudioBeeps = prefs.enableAudioBeeps !== false;
@@ -1046,6 +1067,9 @@ export class CustomizeView extends LitElement {
     async handleExamPrefToggle(prefKey) {
         this[prefKey] = !this[prefKey];
         await tits.storage.updatePreference(prefKey, this[prefKey]);
+        if (prefKey === 'transparentIdleTray' && tits.refreshTrayIcon) {
+            await tits.refreshTrayIcon();
+        }
         this.requestUpdate();
     }
 
@@ -1401,6 +1425,11 @@ export class CustomizeView extends LitElement {
                         <span class="toggle-icon">${icons.pin(16)}</span>
                         <span class="toggle-label">System Tray Badge (A-Z)</span>
                         <div class="m3-switch ${this.enableTrayOutput ? 'active' : ''}"></div>
+                    </div>
+                    <div class="toggle-row" @click=${() => this.handleExamPrefToggle('transparentIdleTray')}>
+                        <span class="toggle-icon">${icons.eye(16)}</span>
+                        <span class="toggle-label">Transparent Tray When Idle</span>
+                        <div class="m3-switch ${this.transparentIdleTray ? 'active' : ''}"></div>
                     </div>
                     <div class="toggle-row" @click=${() => this.handleExamPrefToggle('enableHudOutput')}>
                         <span class="toggle-icon">${icons.shield(16)}</span>

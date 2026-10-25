@@ -30,8 +30,26 @@ export class ExamSolverView extends LitElement {
         :host {
             display: block;
             width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
             background: #0d0e13;
             color: #f3f4f6;
+            scrollbar-gutter: stable;
+        }
+
+        :host::-webkit-scrollbar {
+            width: 8px;
+        }
+        :host::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        :host::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 999px;
+        }
+        :host::-webkit-scrollbar-thumb:hover {
+            background: rgba(250, 204, 21, 0.4);
         }
 
         /* Material You Centered Container with proper margins */

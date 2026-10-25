@@ -116,6 +116,22 @@ function getTrayIcon(letter = null) {
         } catch (e) {}
     }
 
+    // When idle (no answer active), check if transparent block is enabled in settings
+    try {
+        const storage = require('../storage');
+        const prefs = storage.getPreferences() || {};
+        if (prefs.transparentIdleTray) {
+            const ext = process.platform === 'win32' ? 'ico' : 'png';
+            const transparentPath = path.join(__dirname, `../assets/tray_icons/transparent.${ext}`);
+            if (fs.existsSync(transparentPath)) {
+                const img = nativeImage.createFromPath(transparentPath);
+                if (!img.isEmpty()) return img;
+            }
+            const blankImg = nativeImage.createFromBuffer(Buffer.alloc(32 * 32 * 4, 0), { width: 32, height: 32 });
+            if (!blankImg.isEmpty()) return blankImg;
+        }
+    } catch (e) {}
+
     const defaultIconPath = process.platform === 'win32' ? path.join(__dirname, '../assets/logo.ico') : path.join(__dirname, '../assets/logo.png');
     return nativeImage.createFromPath(defaultIconPath);
 }
@@ -166,7 +182,9 @@ function setTrayAnswer(letter, summary = '') {
                 const tip = `[TITS] Option [${currentAnswerLetter}] ${summary ? '— ' + summary.slice(0, 80) : ''}`;
                 tray.setToolTip(tip);
             } else {
-                tray.setToolTip('TITS - Test Intelligence & Tutoring System (BYOK)');
+                const storage = require('../storage');
+                const prefs = storage.getPreferences() || {};
+                tray.setToolTip(prefs.transparentIdleTray ? 'TITS' : 'TITS - Test Intelligence & Tutoring System (BYOK)');
             }
 
             updateTrayMenu();
@@ -174,6 +192,10 @@ function setTrayAnswer(letter, summary = '') {
             console.error('[Tray] Error updating tray answer:', err);
         }
     }
+}
+
+function refreshTrayIcon() {
+    setTrayAnswer(currentAnswerLetter);
 }
 
 function destroyTray() {
@@ -189,6 +211,7 @@ function destroyTray() {
 module.exports = {
     initTray,
     setTrayAnswer,
+    refreshTrayIcon,
     destroyTray,
     createTrayIconDataUrl,
     getTrayIcon,

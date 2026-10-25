@@ -342,6 +342,42 @@ export class TitsApp extends LitElement {
             display: flex;
             flex-direction: column;
             background: var(--bg-app);
+            height: 100%;
+            min-height: 0;
+            position: relative;
+        }
+
+        .content-inner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            scrollbar-gutter: stable;
+        }
+
+        .content-inner > * {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .content-inner::-webkit-scrollbar {
+            width: 8px;
+        }
+        .content-inner::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .content-inner::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 999px;
+        }
+        .content-inner::-webkit-scrollbar-thumb:hover {
+            background: rgba(250, 204, 21, 0.4);
         }
 
         /* Live mode top bar */

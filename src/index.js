@@ -372,4 +372,10 @@ function setupExamIpcHandlers() {
         triggerFullscreenPulse(count || 2, color || '#facc15');
         return { success: true };
     });
+
+    ipcMain.handle('exam:refresh-tray-icon', () => {
+        const { refreshTrayIcon } = require('./utils/tray');
+        refreshTrayIcon();
+        return { success: true };
+    });
 }

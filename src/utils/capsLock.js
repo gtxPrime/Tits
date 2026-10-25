@@ -1,8 +1,61 @@
+const fs = require('fs');
 const { spawn } = require('child_process');
 const os = require('os');
 const path = require('path');
 
 let activeProcess = null;
+
+/**
+ * Runs Windows automation via cscript.exe (fastest, no CLR startup) with fallback to PowerShell -EncodedCommand.
+ */
+function runWindowsVbs(scriptContent, fallbackPsCode) {
+    const vbsPath = path.join(os.tmpdir(), `tits_caps_${Date.now()}_${Math.floor(Math.random() * 10000)}.vbs`);
+    try {
+        fs.writeFileSync(vbsPath, scriptContent, 'utf8');
+        const proc = spawn('cscript.exe', ['//nologo', vbsPath], {
+            windowsHide: true,
+            detached: true,
+            stdio: 'ignore',
+        });
+        const cleanup = () => {
+            try {
+                if (fs.existsSync(vbsPath)) fs.unlinkSync(vbsPath);
+            } catch (_) {}
+        };
+        proc.on('close', cleanup);
+        proc.on('error', () => {
+            cleanup();
+            if (fallbackPsCode) {
+                runWindowsPowerShell(fallbackPsCode);
+            }
+        });
+        proc.unref();
+        return proc;
+    } catch (err) {
+        try {
+            if (fs.existsSync(vbsPath)) fs.unlinkSync(vbsPath);
+        } catch (_) {}
+        if (fallbackPsCode) {
+            return runWindowsPowerShell(fallbackPsCode);
+        }
+        return null;
+    }
+}
+
+function runWindowsPowerShell(psCode) {
+    try {
+        const b64 = Buffer.from(psCode, 'utf16le').toString('base64');
+        const proc = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-EncodedCommand', b64], {
+            windowsHide: true,
+            detached: true,
+            stdio: 'ignore',
+        });
+        proc.unref();
+        return proc;
+    } catch (_) {
+        return null;
+    }
+}
 
 /**
  * Maps option letter (A-Z) to integer count (1-26).
@@ -37,7 +90,15 @@ function pulseCapsLock(count = 1, intervalMs = 200) {
 
     try {
         if (platform === 'win32') {
-            // Windows: Execute via background PowerShell SendKeys loop
+            const vbsScript = [
+                'Set w = CreateObject("WScript.Shell")',
+                `For i = 1 To ${blinkCount}`,
+                '    w.SendKeys "{CAPSLOCK}"',
+                `    WScript.Sleep ${interval}`,
+                '    w.SendKeys "{CAPSLOCK}"',
+                `    WScript.Sleep ${interval}`,
+                'Next',
+            ].join('\r\n');
             const psScript = `
 $w = New-Object -ComObject Wscript.Shell
 1..${blinkCount} | ForEach-Object {
@@ -47,14 +108,7 @@ $w = New-Object -ComObject Wscript.Shell
     Start-Sleep -Milliseconds ${interval}
 }
 `.trim();
-
-            const proc = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', psScript], {
-                windowsHide: true,
-                detached: true,
-                stdio: 'ignore',
-            });
-            proc.unref();
-            activeProcess = proc;
+            activeProcess = runWindowsVbs(vbsScript, psScript);
         } else if (platform === 'darwin') {
             // macOS: Keycode 57 is CapsLock in AppleScript System Events
             const osaScript = `
@@ -102,16 +156,9 @@ function toggleCapsLock() {
     const platform = os.platform();
     try {
         if (platform === 'win32') {
-            const proc = spawn(
-                'powershell.exe',
-                ['-NoProfile', '-NonInteractive', '-Command', "(New-Object -ComObject Wscript.Shell).SendKeys('{CAPSLOCK}')"],
-                {
-                    windowsHide: true,
-                    detached: true,
-                    stdio: 'ignore',
-                }
-            );
-            proc.unref();
+            const vbsScript = 'CreateObject("WScript.Shell").SendKeys "{CAPSLOCK}"';
+            const psScript = '(New-Object -ComObject Wscript.Shell).SendKeys("{CAPSLOCK}")';
+            runWindowsVbs(vbsScript, psScript);
         } else if (platform === 'darwin') {
             const proc = spawn('osascript', ['-e', 'tell application "System Events" to key code 57'], {
                 detached: true,

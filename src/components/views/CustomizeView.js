@@ -783,6 +783,10 @@ export class CustomizeView extends LitElement {
         modelUsages: { type: Object },
         activeModelUsage: { type: Object },
         showModelComparison: { type: Boolean },
+        isTestingCapsLock: { type: Boolean },
+        isTestingTray: { type: Boolean },
+        isTestingPulse: { type: Boolean },
+        isTestingAudio: { type: Boolean },
         onProfileChange: { type: Function },
         onLanguageChange: { type: Function },
         onImageQualityChange: { type: Function },
@@ -846,6 +850,10 @@ export class CustomizeView extends LitElement {
         this.modelUsages = {};
         this.activeModelUsage = null;
         this.showModelComparison = false;
+        this.isTestingCapsLock = false;
+        this.isTestingTray = false;
+        this.isTestingPulse = false;
+        this.isTestingAudio = false;
 
         this._loadFromStorage();
     }
@@ -1424,16 +1432,36 @@ export class CustomizeView extends LitElement {
         this.requestUpdate();
     }
 
+    async handleExamPrefToggle(prefKey) {
+        this[prefKey] = !this[prefKey];
+        await tits.storage.updatePreference(prefKey, this[prefKey]);
+        this.requestUpdate();
+    }
+
     testEarbudBeep() {
+        if (this.isTestingAudio) return;
+        this.isTestingAudio = true;
+        this.requestUpdate();
         if (window.tits && window.tits.playStealthBeeps) {
             window.tits.playStealthBeeps(3);
         }
+        setTimeout(() => {
+            this.isTestingAudio = false;
+            this.requestUpdate();
+        }, 1200);
     }
 
     testScreenPulse() {
+        if (this.isTestingPulse) return;
+        this.isTestingPulse = true;
+        this.requestUpdate();
         if (window.tits && window.tits.triggerScreenPulse) {
             window.tits.triggerScreenPulse(2);
         }
+        setTimeout(() => {
+            this.isTestingPulse = false;
+            this.requestUpdate();
+        }, 1200);
     }
 
     async handleCapsLockModeChange(e) {
@@ -1442,9 +1470,40 @@ export class CustomizeView extends LitElement {
         this.requestUpdate();
     }
 
-    testCapsLock() {
-        if (window.tits && window.tits.triggerCapsLockPulse) {
-            window.tits.triggerCapsLockPulse(2);
+    async testCapsLock() {
+        if (this.isTestingCapsLock) return;
+        this.isTestingCapsLock = true;
+        this.requestUpdate();
+        try {
+            if (window.tits && window.tits.triggerCapsLockPulse) {
+                await window.tits.triggerCapsLockPulse(2);
+            }
+        } catch (err) {
+            console.warn('Failed to pulse Caps Lock:', err);
+        }
+        setTimeout(() => {
+            this.isTestingCapsLock = false;
+            this.requestUpdate();
+        }, 1400);
+    }
+
+    async testTrayBadge() {
+        if (this.isTestingTray) return;
+        this.isTestingTray = true;
+        this.requestUpdate();
+        try {
+            if (window.tits && window.tits.setTrayAnswer) {
+                await window.tits.setTrayAnswer('B', 'Test Answer Option B');
+                setTimeout(async () => {
+                    await window.tits.setTrayAnswer(null);
+                    this.isTestingTray = false;
+                    this.requestUpdate();
+                }, 3000);
+            }
+        } catch (err) {
+            console.warn('Failed to test tray:', err);
+            this.isTestingTray = false;
+            this.requestUpdate();
         }
     }
 
@@ -1873,7 +1932,7 @@ export class CustomizeView extends LitElement {
                         </select>
                     </div>
 
-                    <div class="form-group" style="grid-column: 1 / -1;">
+                    <div class="form-group">
                         <label class="form-label">Exam Vision Model</label>
                         <select class="control" .value=${this.examVisionModel} @change=${this.handleExamVisionModelChange}>
                             <optgroup label="Google Gemini (Free & High Quota)">
@@ -1891,10 +1950,9 @@ export class CustomizeView extends LitElement {
                                 </option>
                             </optgroup>
                         </select>
-
-                        ${this.renderActiveModelUsageCard()}
                     </div>
 
+                    ${this.renderActiveModelUsageCard()}
                     ${
                         this.examTriggerMode !== 'hotkey'
                             ? html`
@@ -1969,7 +2027,19 @@ export class CustomizeView extends LitElement {
                     <div class="toggle-row" @click=${() => this.handleExamPrefToggle('enableTrayOutput')}>
                         <span class="toggle-icon">${icons.pin(16)}</span>
                         <span class="toggle-label">System Tray Badge (A-Z)</span>
-                        <div class="m3-switch ${this.enableTrayOutput ? 'active' : ''}"></div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <button
+                                class="action-btn-secondary"
+                                style="padding:4px 10px;font-size:11px;"
+                                @click=${e => {
+                                    e.stopPropagation();
+                                    this.testTrayBadge();
+                                }}
+                            >
+                                <span>${this.isTestingTray ? 'Badge Set (B)...' : 'Test Tray'}</span>
+                            </button>
+                            <div class="m3-switch ${this.enableTrayOutput ? 'active' : ''}"></div>
+                        </div>
                     </div>
                     <div class="toggle-row" @click=${() => this.handleExamPrefToggle('transparentIdleTray')}>
                         <span class="toggle-icon">${icons.eye(16)}</span>
@@ -2008,7 +2078,7 @@ export class CustomizeView extends LitElement {
                             </select>
                             <button class="action-btn-secondary" @click=${this.testCapsLock}>
                                 ${icons.keyboard(14)}
-                                <span>Test Light</span>
+                                <span>${this.isTestingCapsLock ? 'Pulsing LED...' : 'Test Light'}</span>
                             </button>
                         </div>
                     </div>

@@ -12,7 +12,7 @@
   <a href="https://github.com/gtxPrime/Tits/releases/latest"><img src="https://img.shields.io/github/v/release/gtxPrime/Tits?style=for-the-badge&color=10b981&labelColor=18181b&logo=electron&logoColor=white" alt="Latest Version" /></a>
   <a href="https://github.com/gtxPrime/Tits/stargazers"><img src="https://img.shields.io/github/stars/gtxPrime/Tits?style=for-the-badge&logo=github&color=21262d&logoColor=white" alt="Stars" /></a>
   <a href="https://github.com/gtxPrime/Tits/network/members"><img src="https://img.shields.io/github/forks/gtxPrime/Tits?style=for-the-badge&logo=github&color=21262d&logoColor=white" alt="Forks" /></a>
-  <a href="https://github.com/gtxPrime/Tits/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-21262d?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" /></a>
+  <a href="https://github.com/gtxPrime/Tits/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-21262d?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" /></a>
   <a href="https://github.com/gtxPrime/Tits"><img src="https://img.shields.io/badge/Platform-Windows_%7C_macOS_%7C_Linux-21262d?style=for-the-badge&logo=electron&logoColor=white" alt="Platform" /></a>
   <a href="https://github.com/gtxPrime/Tits/releases/latest"><img src="https://img.shields.io/github/downloads/gtxPrime/Tits/total?label=Downloads&logo=github&style=for-the-badge&color=21262d&logoColor=white" alt="Downloads" /></a>
 </p>

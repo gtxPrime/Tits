@@ -36,7 +36,7 @@ module.exports = {
                 productName: 'Tits',
                 shortcutName: 'Tits',
                 setupIcon: path.resolve(__dirname, 'src/assets/logo.ico'),
-                iconUrl: 'https://raw.githubusercontent.com/gtxPrime/Tits/master/src/assets/logo.ico',
+                iconUrl: 'https://raw.githubusercontent.com/gtxPrime/Tits/main/src/assets/logo.ico',
                 createDesktopShortcut: true,
                 createStartMenuShortcut: true,
             },

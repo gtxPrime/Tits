@@ -626,7 +626,7 @@ export class ExamSolverView extends LitElement {
                             <div class="channel-icon">${icons.pin(18)}</div>
                             <div class="channel-info">
                                 <span class="channel-name">System Tray Badge</span>
-                                <span class="channel-desc">Displays option letter [A-E] on taskbar tray</span>
+                                <span class="channel-desc">Displays option letter [A-Z] on taskbar tray</span>
                             </div>
                             <div class="m3-switch ${this.enableTrayOutput ? 'active' : ''}"></div>
                         </div>
@@ -644,7 +644,7 @@ export class ExamSolverView extends LitElement {
                             <div class="channel-icon">${icons.lightbulb(18)}</div>
                             <div class="channel-info">
                                 <span class="channel-name">Screen Edge Pulse</span>
-                                <span class="channel-desc">Flashes edge N times (1=A, 2=B, 3=C, 4=D)</span>
+                                <span class="channel-desc">Flashes edge N times (1=A, 2=B, 3=C ... 26=Z)</span>
                             </div>
                             <div class="m3-switch ${this.enableScreenPulse ? 'active' : ''}"></div>
                         </div>

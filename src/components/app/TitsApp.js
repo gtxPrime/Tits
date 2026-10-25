@@ -1178,7 +1178,3 @@ export class TitsApp extends LitElement {
 }
 
 customElements.define('tits-app', TitsApp);
-if (!customElements.get('tits-app')) {
-    customElements.define('tits-app', class extends TitsApp {});
-}
-export { TitsApp as TitsApp };

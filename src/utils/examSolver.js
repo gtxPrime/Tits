@@ -43,7 +43,42 @@ function letterToNumber(letter) {
     return 0;
 }
 
+function extractOptionLetter(text) {
+    if (!text) return null;
+    const keywordMatch = text.match(/\b(?:option|answer|choice|letter)(?:\s+(?:is|should\s+be))?\s*[:=\-]?\s*[\(\[]?\s*\b([A-Za-z])\b/i);
+    if (keywordMatch) return keywordMatch[1].toUpperCase();
+    const bracketMatch = text.match(/[\(\[]\s*([A-Za-z])\s*[\)\]]/);
+    if (bracketMatch) return bracketMatch[1].toUpperCase();
+    const singleLetterMatch = text.match(/(?:\s|^)([A-Z])(?:\.|\s|$|,)/);
+    if (singleLetterMatch) return singleLetterMatch[1].toUpperCase();
+    return null;
+}
+
 let isSolving = false;
+let solveStartTime = 0;
+let solveWatchdog = null;
+
+function resetSolveState() {
+    if (solveWatchdog) {
+        clearTimeout(solveWatchdog);
+        solveWatchdog = null;
+    }
+    isSolving = false;
+    solveStartTime = 0;
+    console.log('[ExamSolver] Solve state manually reset');
+}
+
+async function callWithTimeout(promise, ms, errMessage) {
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(errMessage || `Operation timed out after ${ms}ms`)), ms);
+    });
+    try {
+        return await Promise.race([promise, timeoutPromise]);
+    } finally {
+        clearTimeout(timer);
+    }
+}
 
 /**
  * Execute question capture and AI solution
@@ -52,11 +87,33 @@ let isSolving = false;
  */
 async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
     if (isSolving) {
-        console.log('[ExamSolver] Solve already in progress; ignoring trigger');
-        return { success: false, error: 'Already solving' };
+        // Auto-break stale lock if running for more than 15 seconds
+        if (Date.now() - solveStartTime > 15000) {
+            console.warn('[ExamSolver] Previous solve lock exceeded 15s; force-resetting lock');
+            resetSolveState();
+        } else {
+            console.log('[ExamSolver] Solve already in progress; ignoring trigger');
+            return { success: false, error: 'Already solving' };
+        }
     }
 
     isSolving = true;
+    solveStartTime = Date.now();
+
+    // 20-second ultimate safety watchdog to ensure isSolving is NEVER stuck
+    solveWatchdog = setTimeout(() => {
+        if (isSolving) {
+            console.error('[ExamSolver] Safety watchdog: solve operation exceeded 20s. Force-clearing isSolving.');
+            isSolving = false;
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('exam-solving-status', {
+                    status: 'error',
+                    message: 'Solving timed out after 20s. Please verify your API key or network and try again.',
+                });
+            }
+        }
+    }, 20000);
+
     try {
         const prefs = storage.getPreferences() || {};
         const config = storage.getConfig() || {};
@@ -76,7 +133,7 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
             mainWindow.webContents.send('exam-solving-status', { status: 'capturing', message: 'Capturing question...' });
         }
 
-        // 1. Capture screen region
+        // 1. Capture screen region with timeout protection
         const capture = await captureScreenRegion({
             mode: captureMode,
             cropWidth: cropW,
@@ -96,21 +153,22 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
         }
 
         let rawResponseText = '';
+        let lastError = '';
 
+        // Attempt Gemini first if configured
         if (apiKey) {
             const ai = new GoogleGenAI({ apiKey: apiKey });
             const primaryModel = prefs.examVisionModel || 'gemini-2.5-flash';
-            const modelsToTry = [primaryModel, 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-3.8-flash'];
+            const modelsToTry = [primaryModel, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'].filter(Boolean);
             const tried = new Set();
             let result = null;
-            let lastError = '';
 
             for (const m of modelsToTry) {
                 if (tried.has(m)) continue;
                 tried.add(m);
                 try {
                     console.log(`[ExamSolver] Calling Gemini model: ${m}`);
-                    result = await ai.models.generateContent({
+                    const modelPromise = ai.models.generateContent({
                         model: m,
                         contents: [
                             {
@@ -122,6 +180,7 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
                             { text: EXAM_SOLVER_PROMPT },
                         ],
                     });
+                    result = await callWithTimeout(modelPromise, 7000, `Model ${m} timed out after 7s`);
                     if (result && result.text) break;
                 } catch (err) {
                     console.warn(`[ExamSolver] Model ${m} failed:`, err.message);
@@ -129,70 +188,82 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
                 }
             }
 
-            if (!result || !result.text) {
-                let userFriendlyErr = 'All Gemini vision models failed. Check your API key or network.';
-                if (lastError && (lastError.includes('reported as leaked') || lastError.includes('PERMISSION_DENIED'))) {
-                    userFriendlyErr =
-                        'Google rejected this API key (reported as leaked). Please generate a fresh API key at aistudio.google.com and save it in Settings (BYOK).';
-                } else if (lastError && lastError.includes('API key not valid')) {
-                    userFriendlyErr = 'Invalid Gemini API key. Please verify your key at aistudio.google.com and paste it in Settings (BYOK).';
-                } else if (lastError) {
-                    userFriendlyErr = `Gemini API Error: ${lastError.slice(0, 150)}`;
+            if (result && result.text) {
+                rawResponseText = result.text;
+            }
+        }
+
+        // Automatic fallback to Groq Vision if Gemini failed or was not configured
+        if (!rawResponseText && groqApiKey) {
+            console.log('[ExamSolver] Attempting Groq vision fallback...');
+            try {
+                const groqFetchPromise = fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${groqApiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.2-11b-vision-preview',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: [
+                                    { type: 'text', text: EXAM_SOLVER_PROMPT },
+                                    {
+                                        type: 'image_url',
+                                        image_url: { url: `data:image/jpeg;base64,${capture.base64Data}` },
+                                    },
+                                ],
+                            },
+                        ],
+                        temperature: 0.1,
+                    }),
+                });
+
+                const response = await callWithTimeout(groqFetchPromise, 7000, 'Groq request timed out after 7s');
+                const data = await response.json();
+                if (data.choices?.[0]?.message?.content) {
+                    rawResponseText = data.choices[0].message.content;
+                } else if (data.error) {
+                    lastError = data.error.message;
                 }
-                throw new Error(userFriendlyErr);
+            } catch (err) {
+                console.warn('[ExamSolver] Groq fallback failed:', err.message);
+                if (!lastError) lastError = err.message;
             }
+        }
 
-            rawResponseText = result.text || '';
-        } else if (groqApiKey) {
-            // Groq Vision fallback
-            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${groqApiKey}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'llama-3.2-11b-vision-preview',
-                    messages: [
-                        {
-                            role: 'user',
-                            content: [
-                                { type: 'text', text: EXAM_SOLVER_PROMPT },
-                                {
-                                    type: 'image_url',
-                                    image_url: { url: `data:image/jpeg;base64,${capture.base64Data}` },
-                                },
-                            ],
-                        },
-                    ],
-                    temperature: 0.1,
-                }),
-            });
-
-            const data = await response.json();
-            if (data.error) {
-                throw new Error('Groq error: ' + data.error.message);
+        if (!rawResponseText) {
+            let userFriendlyErr = 'All vision models failed. Check your API key or network connection.';
+            if (lastError && (lastError.includes('reported as leaked') || lastError.includes('PERMISSION_DENIED'))) {
+                userFriendlyErr =
+                    'Google rejected this API key (reported as leaked). Please generate a fresh API key at aistudio.google.com and save it in Settings (BYOK).';
+            } else if (lastError && lastError.includes('API key not valid')) {
+                userFriendlyErr = 'Invalid Gemini API key. Please verify your key at aistudio.google.com and paste it in Settings (BYOK).';
+            } else if (lastError) {
+                userFriendlyErr = `Vision API Error: ${lastError.slice(0, 150)}`;
             }
-            rawResponseText = data.choices?.[0]?.message?.content || '';
+            throw new Error(userFriendlyErr);
         }
 
         console.log('[ExamSolver] Raw AI response:', rawResponseText);
 
-        // 3. Parse JSON structure
+        // 3. Robust JSON structure parsing
         let parsed = null;
         try {
-            // Clean markdown codeblocks if model included them
             const cleaned = rawResponseText
                 .replace(/```json/gi, '')
                 .replace(/```/g, '')
                 .trim();
-            parsed = JSON.parse(cleaned);
+            const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+            parsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
         } catch (e) {
             console.warn('[ExamSolver] JSON parse failed, attempting regex extraction');
-            const letterMatch = rawResponseText.match(/\b([A-Z])\b/i);
+            const letter = extractOptionLetter(rawResponseText);
             parsed = {
-                type: letterMatch ? 'mcq' : 'short',
-                letter: letterMatch ? letterMatch[1].toUpperCase() : null,
+                type: letter ? 'mcq' : 'short',
+                letter: letter,
                 question: 'Exam Question',
                 answer: rawResponseText.slice(0, 300),
                 explanation: rawResponseText,
@@ -254,6 +325,10 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
         }
         return { success: false, error: err.message };
     } finally {
+        if (solveWatchdog) {
+            clearTimeout(solveWatchdog);
+            solveWatchdog = null;
+        }
         isSolving = false;
     }
 }
@@ -261,4 +336,7 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
 module.exports = {
     solveCurrentExamQuestion,
     letterToNumber,
+    resetSolveState,
+    extractOptionLetter,
+    isCurrentlySolving: () => isSolving,
 };

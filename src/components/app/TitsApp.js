@@ -581,8 +581,11 @@ export class TitsApp extends LitElement {
         }
         const solverView = this.shadowRoot ? this.shadowRoot.querySelector('exam-solver-view') : null;
         if (solverView) {
-            solverView.statusMessage = status.message;
+            solverView.statusMessage = status.status === 'idle' ? '' : status.message;
             solverView.isSolving = status.status === 'capturing' || status.status === 'analyzing';
+            if (status.status === 'error') {
+                solverView.errorMessage = status.message || 'Error occurred while solving.';
+            }
             solverView.requestUpdate();
         }
     }

@@ -221,7 +221,7 @@ cheating-daddy
 │   ├── test_capslock.js       # Standalone CapsLock LED hardware test utility
 │   └── test_stealth.js        # System Tray and Screen Ray live diagnostic utility
 │
-├── tests/                     # 65+ unit and integration tests (100% passing)
+├── tests/                     # 67+ unit and integration tests (100% passing)
 ├── CONTRIBUTING.md            # Guidelines, architectural principles, and PR steps
 ├── LICENSE                    # GNU General Public License v3.0
 └── package.json               # Manifest, dependencies, and build scripts

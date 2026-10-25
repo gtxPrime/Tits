@@ -1371,8 +1371,8 @@ export class MainView extends LitElement {
                         <div class="help-section">
                             <div class="help-section-title">Native local AI</div>
                             <div class="help-section-text">
-                                TITS runs llama.cpp and whisper.cpp directly. Everything stays on your computer — no external AI service or
-                                Ollama installation is required.
+                                TITS runs llama.cpp and whisper.cpp directly. Everything stays on your computer — no external AI service or Ollama
+                                installation is required.
                             </div>
                         </div>
 

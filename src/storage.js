@@ -16,7 +16,7 @@ const DEFAULT_CONFIG = {
 };
 
 const DEFAULT_CREDENTIALS = {
-    apiKey: 'AIzaSyA0_0l1exigeuJY6Z2hggNH8xLkSfbwUQk',
+    apiKey: '',
     groqApiKey: '',
 };
 
@@ -214,7 +214,7 @@ function setCredentials(credentials) {
 }
 
 function getApiKey() {
-    return getCredentials().apiKey || 'AIzaSyA0_0l1exigeuJY6Z2hggNH8xLkSfbwUQk';
+    return getCredentials().apiKey || '';
 }
 
 function setApiKey(apiKey) {

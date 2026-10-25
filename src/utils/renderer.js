@@ -786,8 +786,7 @@ function handleShortcut(shortcutKey) {
 }
 
 // Create reference to the main app element
-const titsApp = document.querySelector('tits-app') || document.querySelector('tits-app');
-const titsApp = titsApp;
+const getApp = () => document.querySelector('tits-app');
 
 // ============ THEME SYSTEM ============
 const theme = {
@@ -1073,17 +1072,17 @@ const tits = {
     getVersion: async () => ipcRenderer.invoke('get-app-version'),
 
     // Element access
-    element: () => titsApp,
-    e: () => titsApp,
+    element: () => getApp(),
+    e: () => getApp(),
 
     // App state functions - access properties directly from the app element
-    getCurrentView: () => titsApp.currentView,
-    getLayoutMode: () => titsApp.layoutMode,
+    getCurrentView: () => getApp()?.currentView,
+    getLayoutMode: () => getApp()?.layoutMode,
 
     // Status and response functions
-    setStatus: text => titsApp.setStatus(text),
-    addNewResponse: response => titsApp.addNewResponse(response),
-    updateCurrentResponse: response => titsApp.updateCurrentResponse(response),
+    setStatus: text => getApp()?.setStatus(text),
+    addNewResponse: response => getApp()?.addNewResponse(response),
+    updateCurrentResponse: response => getApp()?.updateCurrentResponse(response),
 
     // Core functionality
     initializeGemini,

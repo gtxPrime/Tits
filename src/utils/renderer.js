@@ -1194,7 +1194,10 @@ function matchesKeybind(e, keybindStr) {
     )[0];
     if (!mainKey) return false;
 
-    return e.key.toLowerCase() === mainKey.toLowerCase();
+    const mainLower = mainKey.toLowerCase();
+    const keyMatches = e.key.toLowerCase() === mainLower;
+    const codeMatches = (e.code || '').toLowerCase() === `key${mainLower}` || (e.code || '').toLowerCase() === mainLower;
+    return keyMatches || codeMatches;
 }
 
 window.addEventListener('keydown', async e => {
@@ -1205,7 +1208,7 @@ window.addEventListener('keydown', async e => {
 
     // Quick Exam Solve (Checks configured key combination from settings, default Ctrl+Alt+Q)
     const configuredSolve = await getActiveSolveKeybind();
-    const isDefaultSolve = isCtrlOrCmd && e.altKey && (e.key === 'q' || e.key === 'Q');
+    const isDefaultSolve = isCtrlOrCmd && e.altKey && (e.key === 'q' || e.key === 'Q' || e.code === 'KeyQ');
     if (isDefaultSolve || matchesKeybind(e, configuredSolve)) {
         e.preventDefault();
         tits.solveExam();

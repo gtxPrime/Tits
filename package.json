@@ -1,6 +1,6 @@
 {
     "name": "tits",
-    "productName": "TITS - Test Intelligence & Tutoring System",
+    "productName": "Tits",
     "version": "1.0.0",
     "description": "TITS - Test Intelligence & Tutoring System. Everyone needs TITS during hard times. Open-source, undetectable, BYOK real-time AI exam assistant and tutor.",
     "main": "src/index.js",

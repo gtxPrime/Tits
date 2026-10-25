@@ -1,3 +1,4 @@
+const path = require('path');
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
@@ -5,8 +6,9 @@ module.exports = {
     packagerConfig: {
         asar: true,
         extraResource: ['./src/assets/SystemAudioDump'],
-        name: 'TITS',
-        icon: 'src/assets/logo',
+        name: 'Tits',
+        executableName: 'Tits',
+        icon: path.resolve(__dirname, 'src/assets/logo'),
         // use `security find-identity -v -p codesigning` to find your identity
         // for macos signing
         // also fuck apple
@@ -31,8 +33,10 @@ module.exports = {
             name: '@electron-forge/maker-squirrel',
             config: {
                 name: 'tits',
-                productName: 'TITS - Test Intelligence & Tutoring System',
-                shortcutName: 'TITS',
+                productName: 'Tits',
+                shortcutName: 'Tits',
+                setupIcon: path.resolve(__dirname, 'src/assets/logo.ico'),
+                iconUrl: 'https://raw.githubusercontent.com/gtxPrime/Tits/master/src/assets/logo.ico',
                 createDesktopShortcut: true,
                 createStartMenuShortcut: true,
             },

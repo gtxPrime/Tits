@@ -441,8 +441,77 @@ function createLetterBmpBuffer(letter) {
     return buffer;
 }
 
+const zlib = require('zlib');
+
+function crc32(buf) {
+    let table = new Uint32Array(256);
+    for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+        table[i] = c;
+    }
+    let crc = 0xffffffff;
+    for (let i = 0; i < buf.length; i++) crc = table[(crc ^ buf[i]) & 0xff] ^ (crc >>> 8);
+    return (crc ^ 0xffffffff) >>> 0;
+}
+
+function makeChunk(type, data) {
+    const len = data.length;
+    const buf = Buffer.alloc(12 + len);
+    buf.writeUInt32BE(len, 0);
+    buf.write(type, 4, 4, 'ascii');
+    data.copy(buf, 8);
+    const crc = crc32(buf.subarray(4, 8 + len));
+    buf.writeUInt32BE(crc, 8 + len);
+    return buf;
+}
+
+/**
+ * Generate a standard 32x32 PNG file buffer for any letter A-Z
+ * @param {string} letter
+ * @returns {Buffer} Valid PNG file buffer
+ */
+function createLetterPngBuffer(letter) {
+    const width = 32;
+    const height = 32;
+    const rawBgra = createLetterBitmap(letter);
+
+    const sig = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+    const ihdrData = Buffer.alloc(13);
+    ihdrData.writeUInt32BE(width, 0);
+    ihdrData.writeUInt32BE(height, 4);
+    ihdrData[8] = 8; // 8-bit depth
+    ihdrData[9] = 6; // RGBA
+    ihdrData[10] = 0; // deflate
+    ihdrData[11] = 0; // filter None
+    ihdrData[12] = 0; // no interlace
+    const ihdr = makeChunk('IHDR', ihdrData);
+
+    const stride = width * 4;
+    const rawData = Buffer.alloc(height * (1 + stride));
+    for (let y = 0; y < height; y++) {
+        rawData[y * (1 + stride)] = 0; // Filter byte: 0
+        for (let x = 0; x < width; x++) {
+            const srcIdx = (y * width + x) * 4;
+            const destIdx = y * (1 + stride) + 1 + x * 4;
+            // Swap BGRA to RGBA for standard PNG
+            rawData[destIdx + 0] = rawBgra[srcIdx + 2]; // R
+            rawData[destIdx + 1] = rawBgra[srcIdx + 1]; // G
+            rawData[destIdx + 2] = rawBgra[srcIdx + 0]; // B
+            rawData[destIdx + 3] = rawBgra[srcIdx + 3]; // A
+        }
+    }
+
+    const idatData = zlib.deflateSync(rawData);
+    const idat = makeChunk('IDAT', idatData);
+    const iend = makeChunk('IEND', Buffer.alloc(0));
+
+    return Buffer.concat([sig, ihdr, idat, iend]);
+}
+
 module.exports = {
     createLetterBitmap,
     createLetterBmpBuffer,
+    createLetterPngBuffer,
     GLYPHS_5x7,
 };

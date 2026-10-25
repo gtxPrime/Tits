@@ -73,6 +73,10 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
     stopMacOSAudioCapture();
     stopClickHoldMonitor();
+    try {
+        const { destroyPulseWindow } = require('./utils/screenPulse');
+        destroyPulseWindow();
+    } catch (e) {}
     destroyTray();
     try {
         require('./utils/localai').closeLocalSession();
@@ -364,6 +368,12 @@ function setupExamIpcHandlers() {
         } else {
             stopClickHoldMonitor();
         }
+        return { success: true };
+    });
+
+    ipcMain.handle('exam:trigger-screen-pulse', (event, count, color) => {
+        const { triggerFullscreenPulse } = require('./utils/screenPulse');
+        triggerFullscreenPulse(count || 2, color || '#facc15');
         return { success: true };
     });
 }

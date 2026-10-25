@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { createTrayIconDataUrl } = require('../src/utils/tray');
-const { createLetterBitmap, createLetterBmpBuffer } = require('../src/utils/bmpBadge');
+const { createLetterBitmap, createLetterBmpBuffer, createLetterPngBuffer } = require('../src/utils/bmpBadge');
 
 test('tray: createTrayIconDataUrl generates valid SVG data URL for all option letters A-Z', () => {
     const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'M', 'Z'];
@@ -43,5 +43,14 @@ test('tray: bmpBadge creates valid raw 32x32 BGRA bitmap and BMP file for any le
         const bmp = createLetterBmpBuffer(char);
         assert.strictEqual(bmp.length, 54 + 32 * 32 * 4, 'BMP file buffer must be 4150 bytes');
         assert.strictEqual(bmp.toString('ascii', 0, 2), 'BM', 'Must start with BM header');
+    }
+});
+
+test('tray: bmpBadge creates valid standard PNG file buffer for all option letters A-Z', () => {
+    const expectedSig = '89504e470d0a1a0a';
+    for (const char of ['A', 'B', 'C', 'D', 'E', 'Z']) {
+        const png = createLetterPngBuffer(char);
+        assert.ok(png.length > 100, 'PNG buffer must have content');
+        assert.strictEqual(png.subarray(0, 8).toString('hex'), expectedSig, 'Must have standard PNG magic signature');
     }
 });

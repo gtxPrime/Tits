@@ -1,6 +1,7 @@
 const { GoogleGenAI } = require('@google/genai');
 const { captureScreenRegion } = require('./screenCapture');
 const { setTrayAnswer } = require('./tray');
+const { triggerFullscreenPulse } = require('./screenPulse');
 const storage = require('../storage');
 
 const EXAM_SOLVER_PROMPT = `You are TITS (Test Intelligence & Tutoring System), an elite AI exam solver and academic tutor.
@@ -222,6 +223,7 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
 
             // Channel 3: Screen Flash Pulse (if MCQ option letter found)
             if (enablePulse && pulseCount > 0) {
+                triggerFullscreenPulse(pulseCount, prefs.screenPulseColor || '#facc15');
                 mainWindow.webContents.send('pulse-screen', { count: pulseCount });
             }
 

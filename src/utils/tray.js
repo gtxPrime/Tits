@@ -1,5 +1,7 @@
 const { Tray, Menu, nativeImage, app } = require('electron');
 const path = require('path');
+const fs = require('fs');
+const { createLetterBitmap, createLetterPngBuffer } = require('./bmpBadge');
 
 let tray = null;
 let currentAnswerLetter = null;
@@ -58,19 +60,20 @@ function updateTrayMenu() {
                 if (mainWindowRef.isVisible()) {
                     mainWindowRef.hide();
                 } else {
-                    mainWindowRef.showInactive();
+                    mainWindowRef.show();
+                    mainWindowRef.focus();
                 }
             },
         },
         {
-            label: '🔄 Reset Tray Answer Icon',
+            label: 'Reset Tray Answer Icon',
             click: () => {
                 setTrayAnswer(null);
             },
         },
         { type: 'separator' },
         {
-            label: '❌ Quit TITS',
+            label: 'Quit TITS',
             click: () => {
                 app.quit();
             },
@@ -80,22 +83,18 @@ function updateTrayMenu() {
     tray.setContextMenu(contextMenu);
 }
 
-const fs = require('fs');
-const { createLetterBitmap, createLetterPngBuffer } = require('./bmpBadge');
-
 function getTrayIcon(letter = null) {
     if (letter && /[A-Z0-9]/i.test(letter.toString().trim())) {
         const char = letter.toString().trim().toUpperCase()[0];
 
-        // 1. Prioritize pre-rendered persistent .ico (Windows) or .png (macOS/Linux)
-        const ext = process.platform === 'win32' ? 'ico' : 'png';
-        const iconDiskPath = path.join(__dirname, `../assets/tray_icons/badge_${char}.${ext}`);
-        if (fs.existsSync(iconDiskPath)) {
+        // 1. Prioritize pre-rendered 32x32 PNG badge
+        const pngPath = path.join(__dirname, `../assets/tray_icons/badge_${char}.png`);
+        if (fs.existsSync(pngPath)) {
             try {
-                const img = nativeImage.createFromPath(iconDiskPath);
-                if (!img.isEmpty()) return img;
+                const img = nativeImage.createFromPath(pngPath);
+                if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
             } catch (e) {
-                console.warn('[Tray] Failed to load disk badge icon:', e);
+                console.warn('[Tray] Failed to load PNG badge:', e);
             }
         }
 
@@ -103,16 +102,25 @@ function getTrayIcon(letter = null) {
         try {
             const pngBuf = createLetterPngBuffer(char);
             const img = nativeImage.createFromBuffer(pngBuf);
-            if (!img.isEmpty()) return img;
+            if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
         } catch (e) {
             console.warn('[Tray] Error creating letter badge from PNG:', e);
         }
 
-        // 3. Fallback to raw bitmap if PNG fails
+        // 3. Fallback to ICO if available
+        const icoPath = path.join(__dirname, `../assets/tray_icons/badge_${char}.ico`);
+        if (fs.existsSync(icoPath)) {
+            try {
+                const img = nativeImage.createFromPath(icoPath);
+                if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
+            } catch (e) {}
+        }
+
+        // 4. Fallback to raw bitmap if PNG fails
         try {
             const rawBitmap = createLetterBitmap(char);
             const img = nativeImage.createFromBitmap(rawBitmap, { width: 32, height: 32 });
-            if (!img.isEmpty()) return img;
+            if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
         } catch (e) {}
     }
 
@@ -121,24 +129,33 @@ function getTrayIcon(letter = null) {
         const storage = require('../storage');
         const prefs = storage.getPreferences() || {};
         if (prefs.transparentIdleTray) {
-            const ext = process.platform === 'win32' ? 'ico' : 'png';
-            const transparentPath = path.join(__dirname, `../assets/tray_icons/transparent.${ext}`);
-            if (fs.existsSync(transparentPath)) {
-                const img = nativeImage.createFromPath(transparentPath);
-                if (!img.isEmpty()) return img;
+            const transparentPng = path.join(__dirname, '../assets/tray_icons/transparent.png');
+            if (fs.existsSync(transparentPng)) {
+                const img = nativeImage.createFromPath(transparentPng);
+                if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
             }
             const blankImg = nativeImage.createFromBuffer(Buffer.alloc(32 * 32 * 4, 0), { width: 32, height: 32 });
             if (!blankImg.isEmpty()) return blankImg;
         }
     } catch (e) {}
 
+    // Default icon: 32x32 logo
+    const logoPngPath = path.join(__dirname, '../assets/logo.png');
+    if (fs.existsSync(logoPngPath)) {
+        const img = nativeImage.createFromPath(logoPngPath);
+        if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
+    }
     const defaultIconPath = process.platform === 'win32' ? path.join(__dirname, '../assets/logo.ico') : path.join(__dirname, '../assets/logo.png');
-    return nativeImage.createFromPath(defaultIconPath);
+    return nativeImage.createFromPath(defaultIconPath).resize({ width: 32, height: 32 });
 }
 
 function initTray(mainWindow, onSolve) {
     mainWindowRef = mainWindow;
     onSolveCallback = onSolve;
+
+    if (tray && !tray.isDestroyed()) {
+        return tray;
+    }
 
     try {
         const icon = getTrayIcon(null);
@@ -149,14 +166,22 @@ function initTray(mainWindow, onSolve) {
         tray.setToolTip('TITS - Test Intelligence & Tutoring System (BYOK)');
         updateTrayMenu();
 
-        // Single click toggles window visibility between stealth hide and display
+        // Single click toggles window visibility
         tray.on('click', () => {
             if (!mainWindowRef || mainWindowRef.isDestroyed()) return;
             if (mainWindowRef.isVisible()) {
                 mainWindowRef.hide();
             } else {
-                mainWindowRef.showInactive();
+                mainWindowRef.show();
+                mainWindowRef.focus();
             }
+        });
+
+        // Double click brings window to front
+        tray.on('double-click', () => {
+            if (!mainWindowRef || mainWindowRef.isDestroyed()) return;
+            mainWindowRef.show();
+            mainWindowRef.focus();
         });
 
         console.log('[Tray] Initialized successfully');
@@ -171,15 +196,16 @@ function setTrayAnswer(letter, summary = '') {
     currentAnswerLetter = letter ? letter.toUpperCase() : null;
     const icon = getTrayIcon(currentAnswerLetter);
 
-    // Update System Tray Icon & Tooltip exclusively.
-    // Do NOT alter the main window's taskbar icon, title, overlay badge, or flash frame
-    // because the main window is hidden in stealth mode.
+    if (!tray || tray.isDestroyed()) {
+        initTray(mainWindowRef, onSolveCallback);
+    }
+
     if (tray && !tray.isDestroyed()) {
         try {
             tray.setImage(icon);
 
             if (currentAnswerLetter) {
-                const tip = `[TITS] Option [${currentAnswerLetter}] ${summary ? '— ' + summary.slice(0, 80) : ''}`;
+                const tip = `[TITS] Option [${currentAnswerLetter}] ${summary ? ': ' + summary.slice(0, 80) : ''}`;
                 tray.setToolTip(tip);
             } else {
                 const storage = require('../storage');

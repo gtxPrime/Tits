@@ -13,7 +13,7 @@
   <a href="https://github.com/gtxPrime/Tits/stargazers"><img src="https://img.shields.io/github/stars/gtxPrime/Tits?style=for-the-badge&logo=github&color=21262d&logoColor=white" alt="Stars" /></a>
   <a href="https://github.com/gtxPrime/Tits/network/members"><img src="https://img.shields.io/github/forks/gtxPrime/Tits?style=for-the-badge&logo=github&color=21262d&logoColor=white" alt="Forks" /></a>
   <a href="https://github.com/gtxPrime/Tits/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-21262d?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" /></a>
-  <a href="https://github.com/gtxPrime/Tits"><img src="https://img.shields.io/badge/Platform-Windows_%7C_macOS_%7C_Linux-21262d?style=for-the-badge&logo=windows11&logoColor=white" alt="Platform" /></a>
+  <a href="https://github.com/gtxPrime/Tits"><img src="https://img.shields.io/badge/Platform-Windows_10_%2F_11-21262d?style=for-the-badge&logo=windows11&logoColor=white" alt="Platform" /></a>
   <a href="https://github.com/gtxPrime/Tits/releases/latest"><img src="https://img.shields.io/github/downloads/gtxPrime/Tits/total?label=Downloads&logo=github&style=for-the-badge&color=21262d&logoColor=white" alt="Downloads" /></a>
 </p>
 
@@ -134,7 +134,7 @@ SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
 
 > Precision hotkey listeners with zero mouse interference.
 
-- <img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Global Remappable Hotkeys:** Press `Ctrl + Alt + Q` (or `Alt + Cmd + Q` on macOS) from any active browser or exam window.
+- <img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Global Remappable Hotkeys:** Press `Ctrl + Alt + Q` from any active browser or exam window.
 - <img src="https://api.iconify.design/fa6-solid/computer-mouse.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/computer-mouse.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Strict Combination Key Filtering:** TITS strictly triggers only on designated multi-key combinations, preventing regular clicks, drags, or single modifier presses from causing unwanted executions.
 
 ---
@@ -152,17 +152,17 @@ SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
 
 All shortcuts can be reconfigured in **Settings (BYOK)**:
 
-| Action                     |    Windows / Linux    |        macOS         | Purpose                                             |
-| :------------------------- | :-------------------: | :------------------: | :-------------------------------------------------- |
-| **Solve Exam Question**    |   `Ctrl + Alt + Q`    |   `Alt + Cmd + Q`    | Targets question near cursor and solves instantly   |
-| **Toggle Visibility**      |      `Ctrl + \`       |      `Cmd + \`       | Instantly hides or reveals the app window           |
-| **Toggle Click-Through**   |      `Ctrl + M`       |      `Cmd + M`       | Enables clicking through the app to background apps |
-| **Ask Next Step / Solve**  |    `Ctrl + Enter`     |    `Cmd + Enter`     | Captures screen and requests AI follow-up           |
-| **Previous Response**      |      `Ctrl + [`       |      `Cmd + [`       | Navigates to previous AI response                   |
-| **Next Response**          |      `Ctrl + ]`       |      `Cmd + ]`       | Navigates to next AI response                       |
-| **Scroll Response Up**     |  `Ctrl + Shift + Up`  |  `Cmd + Shift + Up`  | Scrolls response content upward                     |
-| **Scroll Response Down**   | `Ctrl + Shift + Down` | `Cmd + Shift + Down` | Scrolls response content downward                   |
-| **Emergency Erase & Quit** |  `Ctrl + Shift + E`   |  `Cmd + Shift + E`   | Immediately purges session from RAM and quits       |
+| Action                     |    Shortcut Key       | Purpose                                             |
+| :------------------------- | :-------------------: | :-------------------------------------------------- |
+| **Solve Exam Question**    |   `Ctrl + Alt + Q`    | Targets question near cursor and solves instantly   |
+| **Toggle Visibility**      |      `Ctrl + \`       | Instantly hides or reveals the app window           |
+| **Toggle Click-Through**   |      `Ctrl + M`       | Enables clicking through the app to background apps |
+| **Ask Next Step / Solve**  |    `Ctrl + Enter`     | Captures screen and requests AI follow-up           |
+| **Previous Response**      |      `Ctrl + [`       | Navigates to previous AI response                   |
+| **Next Response**          |      `Ctrl + ]`       | Navigates to next AI response                       |
+| **Scroll Response Up**     |  `Ctrl + Shift + Up`  | Scrolls response content upward                     |
+| **Scroll Response Down**   | `Ctrl + Shift + Down` | Scrolls response content downward                   |
+| **Emergency Erase & Quit** |  `Ctrl + Shift + E`   | Immediately purges session from RAM and quits       |
 
 ---
 

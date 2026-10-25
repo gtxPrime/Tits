@@ -52,8 +52,8 @@ const DEFAULT_PREFERENCES = {
     screenPulseDuration: 800,
     beepPitch: 880,
     beepVolume: 0.2,
-    examVisionModel: 'gemini-2.5-flash',
-    interviewModel: 'gemini-2.5-flash',
+    examVisionModel: 'gemini-flash-latest',
+    interviewModel: 'gemini-flash-latest',
     vadSensitivity: 0.5,
     autoScrollEnabled: true,
     solveExamKeybind: 'Ctrl+Alt+Q',
@@ -216,20 +216,33 @@ function setCredentials(credentials) {
     return writeJsonFile(getCredentialsPath(), updated);
 }
 
+function sanitizeApiKey(raw) {
+    if (!raw || typeof raw !== 'string') return '';
+    let key = raw.trim();
+    if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+        key = key.slice(1, -1).trim();
+    }
+    return key;
+}
+
 function getApiKey() {
-    return getCredentials().apiKey || '';
+    const creds = getCredentials();
+    const key = creds.apiKey || process.env.GEMINI_API_KEY || '';
+    return sanitizeApiKey(key);
 }
 
 function setApiKey(apiKey) {
-    return setCredentials({ apiKey });
+    return setCredentials({ apiKey: sanitizeApiKey(apiKey) });
 }
 
 function getGroqApiKey() {
-    return getCredentials().groqApiKey || '';
+    const creds = getCredentials();
+    const key = creds.groqApiKey || process.env.GROQ_API_KEY || '';
+    return sanitizeApiKey(key);
 }
 
 function setGroqApiKey(groqApiKey) {
-    return setCredentials({ groqApiKey });
+    return setCredentials({ groqApiKey: sanitizeApiKey(groqApiKey) });
 }
 
 // ============ PREFERENCES ============

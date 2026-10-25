@@ -1,5 +1,5 @@
 // Main app components
-export { TitsApp, TitsApp } from './app/TitsApp.js';
+export { TitsApp } from './app/TitsApp.js';
 export { AppHeader } from './app/AppHeader.js';
 
 // View components
@@ -9,4 +9,6 @@ export { HelpView } from './views/HelpView.js';
 export { HistoryView } from './views/HistoryView.js';
 export { AssistantView } from './views/AssistantView.js';
 export { OnboardingView } from './views/OnboardingView.js';
-export { AdvancedView } from './views/AdvancedView.js';
+export { ExamSolverView } from './views/ExamSolverView.js';
+export { AICustomizeView } from './views/AICustomizeView.js';
+export { FeedbackView } from './views/FeedbackView.js';

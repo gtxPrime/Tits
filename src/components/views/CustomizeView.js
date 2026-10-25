@@ -1320,6 +1320,7 @@ export class CustomizeView extends LitElement {
                         <label class="form-label">Exam Vision Model</label>
                         <select class="control" .value=${this.examVisionModel} @change=${this.handleExamVisionModelChange}>
                             <option value="gemini-2.5-flash">Gemini 2.5 Flash (Sub-second Reasoning - Recommended)</option>
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (High Efficiency)</option>
                             <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep Reasoning & STEM)</option>
                             <option value="llama-3.2-11b-vision-preview">Groq Llama 3.2 11B Vision (Ultra Fast)</option>
                         </select>
@@ -1398,7 +1399,7 @@ export class CustomizeView extends LitElement {
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                     <div class="toggle-row" @click=${() => this.handleExamPrefToggle('enableTrayOutput')}>
                         <span class="toggle-icon">${icons.pin(16)}</span>
-                        <span class="toggle-label">System Tray Badge (A-E)</span>
+                        <span class="toggle-label">System Tray Badge (A-Z)</span>
                         <div class="m3-switch ${this.enableTrayOutput ? 'active' : ''}"></div>
                     </div>
                     <div class="toggle-row" @click=${() => this.handleExamPrefToggle('enableHudOutput')}>

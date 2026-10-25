@@ -1061,6 +1061,11 @@ const theme = {
             const themeName = prefs.theme || 'dark';
             const alpha = prefs.backgroundTransparency ?? 0.8;
             this.apply(themeName, alpha);
+            try {
+                if (ipcRenderer) {
+                    ipcRenderer.invoke('set-window-opacity', alpha).catch(() => {});
+                }
+            } catch (e) {}
             return themeName;
         } catch (err) {
             this.apply('dark');
@@ -1126,6 +1131,8 @@ const tits = {
     // Window controls
     toggleVisibility: () => ipcRenderer.invoke('toggle-window-visibility'),
     toggleClickThrough: () => ipcRenderer.invoke('toggle-click-through'),
+    setWindowOpacity: opacity => ipcRenderer.invoke('set-window-opacity', opacity),
+    getWindowOpacity: () => ipcRenderer.invoke('get-window-opacity'),
 
     // Global action dispatcher for shortcuts
     handleShortcut(key) {

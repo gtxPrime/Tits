@@ -1026,12 +1026,18 @@ export class CustomizeView extends LitElement {
 
     async handleBackgroundTransparencyChange(e) {
         this.backgroundTransparency = parseFloat(e.target.value);
+        if (window.tits && typeof window.tits.setWindowOpacity === 'function') {
+            window.tits.setWindowOpacity(this.backgroundTransparency);
+        }
         await tits.storage.updatePreference('backgroundTransparency', this.backgroundTransparency);
         this.updateBackgroundAppearance();
         this.requestUpdate();
     }
 
     updateBackgroundAppearance() {
+        if (window.tits && typeof window.tits.setWindowOpacity === 'function') {
+            window.tits.setWindowOpacity(this.backgroundTransparency);
+        }
         if (tits.theme && tits.theme.get) {
             const colors = tits.theme.get(this.theme);
             if (colors) {
@@ -2231,13 +2237,13 @@ export class CustomizeView extends LitElement {
                     </div>
                     <div class="form-group slider-wrap">
                         <div class="slider-header">
-                            <label class="form-label">Background Transparency</label>
+                            <label class="form-label">Window Transparency (Opacity)</label>
                             <span class="slider-value">${Math.round(this.backgroundTransparency * 100)}%</span>
                         </div>
                         <input
                             class="slider-input"
                             type="range"
-                            min="0"
+                            min="0.10"
                             max="1"
                             step="0.01"
                             .value=${this.backgroundTransparency}

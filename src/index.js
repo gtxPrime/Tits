@@ -190,6 +190,10 @@ function setupStorageIpcHandlers() {
     ipcMain.handle('storage:set-preferences', async (event, preferences) => {
         try {
             storage.setPreferences(preferences);
+            if (preferences && typeof preferences.backgroundTransparency === 'number' && mainWindow && !mainWindow.isDestroyed()) {
+                const val = Math.max(0.1, Math.min(1.0, preferences.backgroundTransparency));
+                mainWindow.setOpacity(val);
+            }
             return { success: true };
         } catch (error) {
             console.error('Error setting preferences:', error);
@@ -200,6 +204,10 @@ function setupStorageIpcHandlers() {
     ipcMain.handle('storage:update-preference', async (event, key, value) => {
         try {
             storage.updatePreference(key, value);
+            if (key === 'backgroundTransparency' && mainWindow && !mainWindow.isDestroyed()) {
+                const val = typeof value === 'number' ? Math.max(0.1, Math.min(1.0, value)) : 1.0;
+                mainWindow.setOpacity(val);
+            }
             return { success: true };
         } catch (error) {
             console.error('Error updating preference:', error);

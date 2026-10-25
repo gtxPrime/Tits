@@ -124,27 +124,12 @@ function getTrayIcon(letter = null) {
         } catch (e) {}
     }
 
-    // When idle (no answer active), check if transparent block is enabled in settings
-    try {
-        const storage = require('../storage');
-        const prefs = storage.getPreferences() || {};
-        if (prefs.transparentIdleTray === true) {
-            const transparentPng = path.join(__dirname, '../assets/tray_icons/transparent.png');
-            if (fs.existsSync(transparentPng)) {
-                const img = nativeImage.createFromPath(transparentPng);
-                if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
-            }
-            const blankImg = nativeImage.createFromBuffer(Buffer.alloc(32 * 32 * 4, 0), { width: 32, height: 32 });
-            if (!blankImg.isEmpty()) return blankImg;
-        }
-    } catch (e) {}
-
-    // Default idle icon: use high-contrast 32x32 brand badge (badge_T) so the icon is always clearly visible and never disappears
+    // Default idle icon: use high-contrast 32x32 brand badge (badge_T) so the icon is always clearly visible and never transparent
     const idleBadgePng = path.join(__dirname, '../assets/tray_icons/badge_T.png');
     if (fs.existsSync(idleBadgePng)) {
         try {
             const img = nativeImage.createFromPath(idleBadgePng);
-            if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
+            if (!img.isEmpty()) return img;
         } catch (e) {}
     }
 
@@ -226,9 +211,7 @@ function setTrayAnswer(letter, summary = '') {
                 const tip = `[Tits] Option [${currentAnswerLetter}] ${summary ? ': ' + summary.slice(0, 80) : ''}`;
                 tray.setToolTip(tip);
             } else {
-                const storage = require('../storage');
-                const prefs = storage.getPreferences() || {};
-                tray.setToolTip(prefs.transparentIdleTray ? 'Tits' : 'Tits - Test Intelligence & Tutoring System (BYOK)');
+                tray.setToolTip('Tits - Test Intelligence & Tutoring System (BYOK)');
             }
 
             updateTrayMenu();

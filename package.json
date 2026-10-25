@@ -1,0 +1,55 @@
+{
+    "name": "tits",
+    "productName": "TITS - Test Intelligence & Tutoring System",
+    "version": "1.0.0",
+    "description": "TITS - Test Intelligence & Tutoring System. Everyone needs TITS during hard times. Open-source, undetectable, BYOK real-time AI exam assistant and tutor.",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "electron-forge start",
+        "package": "electron-forge package",
+        "make": "electron-forge make",
+        "publish": "electron-forge publish",
+        "lint": "echo \"No linting configured\"",
+        "test": "node --test tests/**/*.test.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/gtxPrime/Tits.git"
+    },
+    "bugs": {
+        "url": "https://github.com/gtxPrime/Tits/issues"
+    },
+    "homepage": "https://github.com/gtxPrime/Tits#readme",
+    "keywords": [
+        "tits",
+        "test intelligence",
+        "exam assistant",
+        "byok",
+        "ai tutor",
+        "screen capture",
+        "audio capture"
+    ],
+    "author": {
+        "name": "gtxPrime",
+        "email": "gtxprime.com@gmail.com"
+    },
+    "license": "GPL-3.0",
+    "dependencies": {
+        "@google/genai": "^1.2.0",
+        "electron-squirrel-startup": "^1.0.1",
+        "ws": "^8.19.0"
+    },
+    "devDependencies": {
+        "@electron-forge/cli": "^7.8.1",
+        "@electron-forge/maker-deb": "^7.8.1",
+        "@electron-forge/maker-dmg": "^7.8.1",
+        "@electron-forge/maker-rpm": "^7.8.1",
+        "@electron-forge/maker-squirrel": "^7.8.1",
+        "@electron-forge/maker-zip": "^7.8.1",
+        "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+        "@electron-forge/plugin-fuses": "^7.8.1",
+        "@electron/fuses": "^1.8.0",
+        "@reforged/maker-appimage": "^5.0.0",
+        "electron": "^30.0.5"
+    }
+}

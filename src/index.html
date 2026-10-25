@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="content-security-policy" content="script-src 'self' 'unsafe-inline'" />
+        <title>TITS - Test Intelligence & Tutoring System</title>
+        <style>
+            :root {
+                /* Backgrounds */
+                --bg-app: #08090d;
+                --bg-surface: #0f1118;
+                --bg-elevated: #161922;
+                --bg-hover: #1f2330;
+
+                /* Text */
+                --text-primary: #f8fafc;
+                --text-secondary: #94a3b8;
+                --text-muted: #64748b;
+
+                /* Borders & Lines */
+                --border: rgba(255, 255, 255, 0.08);
+                --border-strong: rgba(250, 204, 21, 0.35);
+
+                /* Cyber Gold Yellow Accent */
+                --accent: #facc15;
+                --accent-hover: #eab308;
+                --accent-text: #000000;
+                --accent-glow: rgba(250, 204, 21, 0.25);
+                --accent-subtle: rgba(250, 204, 21, 0.1);
+
+                /* Status */
+                --success: #22c55e;
+                --warning: #facc15;
+                --danger: #ef4444;
+
+                /* Typography */
+                --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+                --font-mono: 'JetBrains Mono', 'SF Mono', 'Menlo', 'Consolas', monospace;
+                --font-size-xs: 11px;
+                --font-size-sm: 13px;
+                --font-size-base: 14px;
+                --font-size-lg: 16px;
+                --font-size-xl: 20px;
+                --font-size-2xl: 28px;
+                --font-weight-normal: 400;
+                --font-weight-medium: 500;
+                --font-weight-semibold: 600;
+                --line-height: 1.6;
+
+                /* Spacing */
+                --space-xs: 4px;
+                --space-sm: 8px;
+                --space-md: 16px;
+                --space-lg: 24px;
+                --space-xl: 40px;
+                --space-2xl: 64px;
+
+                /* Radius */
+                --radius-sm: 6px;
+                --radius-md: 10px;
+                --radius-lg: 14px;
+                --radius-xl: 18px;
+
+                /* Transitions */
+                --transition: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+
+                /* Sidebar */
+                --sidebar-width: 244px;
+                --sidebar-width-collapsed: 60px;
+
+                /* Legacy compatibility — mapped to new tokens */
+                --background-transparent: transparent;
+                --bg-primary: var(--bg-app);
+                --bg-secondary: var(--bg-surface);
+                --bg-tertiary: var(--bg-elevated);
+                --text-color: var(--text-primary);
+                --description-color: var(--text-secondary);
+                --placeholder-color: var(--text-muted);
+                --border-color: var(--border);
+                --border-subtle: var(--border);
+                --border-default: var(--border-strong);
+                --header-background: var(--bg-surface);
+                --header-actions-color: var(--text-secondary);
+                --main-content-background: var(--bg-app);
+                --button-background: transparent;
+                --button-border: var(--border-strong);
+                --icon-button-color: var(--text-secondary);
+                --hover-background: var(--bg-hover);
+                --input-background: var(--bg-elevated);
+                --input-focus-background: var(--bg-elevated);
+                --focus-border-color: var(--accent);
+                --focus-box-shadow: transparent;
+                --scrollbar-track: transparent;
+                --scrollbar-thumb: rgba(255, 255, 255, 0.14);
+                --scrollbar-thumb-hover: rgba(255, 255, 255, 0.28);
+                --scrollbar-background: transparent;
+                --start-button-background: var(--accent);
+                --start-button-color: #ffffff;
+                --start-button-border: var(--accent);
+                --start-button-hover-background: var(--accent-hover);
+                --start-button-hover-border: var(--accent-hover);
+                --text-input-button-background: var(--accent);
+                --text-input-button-hover: var(--accent-hover);
+                --link-color: var(--accent);
+                --key-background: var(--bg-elevated);
+                --success-color: var(--success);
+                --warning-color: var(--warning);
+                --error-color: var(--danger);
+                --danger-color: var(--danger);
+                --preview-video-background: var(--bg-surface);
+                --preview-video-border: var(--border);
+                --option-label-color: var(--text-primary);
+                --screen-option-background: var(--bg-surface);
+                --screen-option-hover-background: var(--bg-elevated);
+                --screen-option-selected-background: var(--bg-hover);
+                --screen-option-text: var(--text-secondary);
+
+                /* Layout-specific */
+                --header-padding: 8px 16px;
+                --header-font-size: 14px;
+                --header-gap: 8px;
+                --header-button-padding: 6px 12px;
+                --header-icon-padding: 6px;
+                --header-font-size-small: 12px;
+                --main-content-padding: 16px;
+                --main-content-margin-top: 0;
+                --icon-size: 18px;
+                --border-radius: var(--radius-sm);
+                --content-border-radius: 0;
+            }
+
+            html {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                overflow: hidden;
+                border-radius: 12px;
+                background: transparent;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                overflow: hidden;
+                background: var(--bg-app);
+                color: var(--text-primary);
+                line-height: var(--line-height);
+                border-radius: 12px;
+                border: none;
+                font-family: var(--font);
+                font-size: var(--font-size-base);
+                font-weight: var(--font-weight-normal);
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            :focus-visible {
+                outline: 2px solid var(--accent);
+                outline-offset: 2px;
+            }
+
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.14);
+                border-radius: 999px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.28);
+            }
+
+            tits-app,
+            tits-app {
+                display: block;
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <script src="assets/marked-4.3.0.min.js"></script>
+        <script src="assets/highlight-11.9.0.min.js"></script>
+        <link rel="stylesheet" href="assets/highlight-vscode-dark.min.css" />
+        <script type="module" src="components/app/TitsApp.js"></script>
+
+        <tits-app id="titsApp"></tits-app>
+        <script src="utils/renderer.js"></script>
+    </body>
+</html>

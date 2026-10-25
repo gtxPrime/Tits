@@ -40,13 +40,14 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y squashfs-tools libarchive-tools fakeroot dpkg rpm libasound2-dev
+          sudo apt-get install -y squashfs-tools libarchive-tools fakeroot dpkg rpm file libasound2-dev
 
       - name: Install Dependencies
         run: npm ci || npm install
 
       - name: Build and Package Distributables
-        run: npm run make
+        run: |
+          npm run make || npx electron-forge make --targets @electron-forge/maker-zip,@electron-forge/maker-deb
 
       - name: Release to GitHub Releases
         uses: softprops/action-gh-release@v2
@@ -59,7 +60,5 @@ jobs:
             out/make/**/*.AppImage
             out/make/**/*.deb
             out/make/**/*.rpm
-            out/make/**/*.nupkg
-            out/make/**/RELEASES
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

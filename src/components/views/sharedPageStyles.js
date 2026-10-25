@@ -11,7 +11,8 @@ export const unifiedPageStyles = css`
     :host {
         display: block;
         height: 100%;
-        overflow: hidden;
+        min-height: 0;
+        overflow-y: auto;
     }
 
     .unified-page {

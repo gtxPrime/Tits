@@ -42,6 +42,7 @@ const DEFAULT_PREFERENCES = {
     cursorCropHeight: 600,
     clickHoldDuration: 5,
     enableTrayOutput: true,
+    transparentIdleTray: false,
     enableHudOutput: true,
     enableScreenPulse: false,
     enableAudioBeeps: true,

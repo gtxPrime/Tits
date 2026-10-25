@@ -54,3 +54,22 @@ test('tray: bmpBadge creates valid standard PNG file buffer for all option lette
         assert.strictEqual(png.subarray(0, 8).toString('hex'), expectedSig, 'Must have standard PNG magic signature');
     }
 });
+
+test('tray: logo and transparent tray assets exist and are valid', () => {
+    const fs = require('fs');
+    const path = require('path');
+
+    const logoPng = path.join(__dirname, '../src/assets/logo.png');
+    const logoIco = path.join(__dirname, '../src/assets/logo.ico');
+    const transparentPng = path.join(__dirname, '../src/assets/tray_icons/transparent.png');
+    const transparentIco = path.join(__dirname, '../src/assets/tray_icons/transparent.ico');
+
+    assert.ok(fs.existsSync(logoPng), 'src/assets/logo.png must exist');
+    assert.ok(fs.statSync(logoPng).size > 10000, 'logo.png must have content');
+
+    assert.ok(fs.existsSync(logoIco), 'src/assets/logo.ico must exist');
+    assert.ok(fs.statSync(logoIco).size > 1000, 'logo.ico must have content');
+
+    assert.ok(fs.existsSync(transparentPng), 'transparent.png must exist');
+    assert.ok(fs.existsSync(transparentIco), 'transparent.ico must exist');
+});

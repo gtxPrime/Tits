@@ -1,7 +1,16 @@
-# TITS — Test Intelligence & Tutoring System
+<div align="center">
+  <img src="icon.png" width="180" height="180" alt="TITS Logo" style="border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+  <h1>TITS — Test Intelligence & Tutoring System</h1>
+  <p><strong>Everyone needs TITS during hard times.</strong></p>
+  <p><em>An undetectable, real-time AI copilot engineered for test solving, interview intelligence, and technical problem solving.</em></p>
 
-> **Everyone needs TITS during hard times.**
-> An undetectable, real-time AI copilot engineered for test solving, interview intelligence, and technical problem solving.
+  <p>
+    <a href="https://github.com/gtxPrime/Tits/releases"><img src="https://img.shields.io/badge/Release-v1.0.0-gold?style=flat-square&logo=electron" alt="Release v1.0.0"></a>
+    <a href="https://github.com/gtxPrime/Tits/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue?style=flat-square" alt="License"></a>
+    <img src="https://img.shields.io/badge/Platform-Windows%20|%20macOS%20|%20Linux-green?style=flat-square" alt="Platforms">
+    <img src="https://img.shields.io/badge/Architecture-BYOK-purple?style=flat-square" alt="BYOK">
+  </p>
+</div>
 
 ---
 

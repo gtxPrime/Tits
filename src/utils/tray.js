@@ -43,7 +43,7 @@ function updateTrayMenu() {
 
     const contextMenu = Menu.buildFromTemplate([
         {
-            label: currentAnswerLetter ? `Last Answer: Option [${currentAnswerLetter}]` : 'TITS - Test Intelligence & Tutoring System',
+            label: currentAnswerLetter ? `Last Answer: Option [${currentAnswerLetter}]` : 'Tits - Test Intelligence & Tutoring System',
             enabled: false,
         },
         { type: 'separator' },
@@ -73,7 +73,7 @@ function updateTrayMenu() {
         },
         { type: 'separator' },
         {
-            label: 'Quit TITS',
+            label: 'Quit Tits',
             click: () => {
                 app.quit();
             },
@@ -128,7 +128,7 @@ function getTrayIcon(letter = null) {
     try {
         const storage = require('../storage');
         const prefs = storage.getPreferences() || {};
-        if (prefs.transparentIdleTray) {
+        if (prefs.transparentIdleTray === true) {
             const transparentPng = path.join(__dirname, '../assets/tray_icons/transparent.png');
             if (fs.existsSync(transparentPng)) {
                 const img = nativeImage.createFromPath(transparentPng);
@@ -139,14 +139,32 @@ function getTrayIcon(letter = null) {
         }
     } catch (e) {}
 
-    // Default icon: 32x32 logo
+    // Default idle icon: use high-contrast 32x32 brand badge (badge_T) so the icon is always clearly visible and never disappears
+    const idleBadgePng = path.join(__dirname, '../assets/tray_icons/badge_T.png');
+    if (fs.existsSync(idleBadgePng)) {
+        try {
+            const img = nativeImage.createFromPath(idleBadgePng);
+            if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
+        } catch (e) {}
+    }
+
     const logoPngPath = path.join(__dirname, '../assets/logo.png');
     if (fs.existsSync(logoPngPath)) {
-        const img = nativeImage.createFromPath(logoPngPath);
-        if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
+        try {
+            const img = nativeImage.createFromPath(logoPngPath);
+            if (!img.isEmpty()) return img.resize({ width: 32, height: 32 });
+        } catch (e) {}
     }
+
     const defaultIconPath = process.platform === 'win32' ? path.join(__dirname, '../assets/logo.ico') : path.join(__dirname, '../assets/logo.png');
-    return nativeImage.createFromPath(defaultIconPath).resize({ width: 32, height: 32 });
+    try {
+        const fallbackImg = nativeImage.createFromPath(defaultIconPath);
+        if (!fallbackImg.isEmpty()) return fallbackImg.resize({ width: 32, height: 32 });
+    } catch (e) {}
+
+    // Guarantee non-empty image as ultimate fallback
+    const fallbackPngBuf = createLetterPngBuffer('T');
+    return nativeImage.createFromBuffer(fallbackPngBuf).resize({ width: 32, height: 32 });
 }
 
 function initTray(mainWindow, onSolve) {
@@ -163,7 +181,7 @@ function initTray(mainWindow, onSolve) {
         // Retain permanent global reference to prevent V8 garbage collection dropping the HICON
         global.__tits_tray = tray;
 
-        tray.setToolTip('TITS - Test Intelligence & Tutoring System (BYOK)');
+        tray.setToolTip('Tits - Test Intelligence & Tutoring System (BYOK)');
         updateTrayMenu();
 
         // Single click toggles window visibility
@@ -205,12 +223,12 @@ function setTrayAnswer(letter, summary = '') {
             tray.setImage(icon);
 
             if (currentAnswerLetter) {
-                const tip = `[TITS] Option [${currentAnswerLetter}] ${summary ? ': ' + summary.slice(0, 80) : ''}`;
+                const tip = `[Tits] Option [${currentAnswerLetter}] ${summary ? ': ' + summary.slice(0, 80) : ''}`;
                 tray.setToolTip(tip);
             } else {
                 const storage = require('../storage');
                 const prefs = storage.getPreferences() || {};
-                tray.setToolTip(prefs.transparentIdleTray ? 'TITS' : 'TITS - Test Intelligence & Tutoring System (BYOK)');
+                tray.setToolTip(prefs.transparentIdleTray ? 'Tits' : 'Tits - Test Intelligence & Tutoring System (BYOK)');
             }
 
             updateTrayMenu();

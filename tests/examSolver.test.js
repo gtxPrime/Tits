@@ -55,3 +55,30 @@ test('examSolver: regex fallback handles unformatted text responses', () => {
     assert.strictEqual(letterMatch[1].toUpperCase(), 'H');
     assert.strictEqual(letterToNumber(letterMatch[1]), 8);
 });
+
+test('examSolver: resetSolveState resets lock and isCurrentlySolving returns false', () => {
+    const { resetSolveState, isCurrentlySolving } = require('../src/utils/examSolver');
+    assert.strictEqual(typeof resetSolveState, 'function');
+    assert.strictEqual(typeof isCurrentlySolving, 'function');
+
+    resetSolveState();
+    assert.strictEqual(isCurrentlySolving(), false, 'isCurrentlySolving must be false after reset');
+});
+
+test('examSolver: extractOptionLetter handles complex conversational answer formats', () => {
+    const { extractOptionLetter } = require('../src/utils/examSolver');
+    const cases = [
+        { text: 'Based on analysis, the correct answer is: [B]', expected: 'B' },
+        { text: 'Option D is mathematically valid because det(A) != 0.', expected: 'D' },
+        { text: 'Correct choice: A.', expected: 'A' },
+        { text: 'Answer = C', expected: 'C' },
+        { text: 'The correct choice is H because mitochondria is the powerhouse.', expected: 'H' },
+    ];
+
+    for (const c of cases) {
+        const letter = extractOptionLetter(c.text);
+        assert.strictEqual(letter, c.expected, `Failed extracting from: "${c.text}"`);
+    }
+
+    assert.strictEqual(extractOptionLetter('No options provided, answer is 42'), null);
+});

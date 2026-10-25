@@ -24,13 +24,20 @@ async function captureScreenRegion(options = {}) {
         `[ScreenCapture] Cursor at (${cursorPoint.x}, ${cursorPoint.y}), display size: ${physicalWidth}x${physicalHeight}, scale: ${scaleFactor}`
     );
 
-    const sources = await desktopCapturer.getSources({
+    const captureW = Math.min(2560, physicalWidth);
+    const captureH = Math.min(1440, physicalHeight);
+
+    const sourcesPromise = desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: {
-            width: physicalWidth,
-            height: physicalHeight,
+            width: captureW,
+            height: captureH,
         },
     });
+
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Screen capture timed out after 6 seconds')), 6000));
+
+    const sources = await Promise.race([sourcesPromise, timeoutPromise]);
 
     if (!sources || sources.length === 0) {
         throw new Error('No screen capture sources available');
@@ -46,21 +53,6 @@ async function captureScreenRegion(options = {}) {
     let finalImage = selectedSource.thumbnail;
 
     if (mode === 'cursor_crop') {
-        const relX = Math.round((cursorPoint.x - display.bounds.x) * scaleFactor);
-        const relY = Math.round((cursorPoint.y - display.bounds.y) * scaleFactor);
-
-        const cropW = Math.min(physicalWidth, Math.round(targetCropW * scaleFactor));
-        const cropH = Math.min(physicalHeight, Math.round(targetCropH * scaleFactor));
-
-        let startX = Math.round(relX - cropW / 2);
-        let startY = Math.round(relY - cropH / 2);
-
-        // Clamp inside physical bounds
-        if (startX < 0) startX = 0;
-        if (startY < 0) startY = 0;
-        if (startX + cropW > physicalWidth) startX = physicalWidth - cropW;
-        if (startY + cropH > physicalHeight) startY = physicalHeight - cropH;
-
         const cropRect = calculateCropRect({
             cursor: cursorPoint,
             displayBounds: display.bounds,
@@ -69,9 +61,17 @@ async function captureScreenRegion(options = {}) {
             cropHeight: targetCropH,
         });
 
-        console.log(`[ScreenCapture] Cropping around cursor: [x:${cropRect.x}, y:${cropRect.y}, w:${cropRect.width}, h:${cropRect.height}]`);
+        // Ensure cropRect stays strictly within actual thumbnail dimensions to prevent native out-of-bounds errors
+        const actualSize = finalImage.getSize();
+        if (actualSize.width > 0 && actualSize.height > 0) {
+            const safeX = Math.max(0, Math.min(cropRect.x, actualSize.width - 1));
+            const safeY = Math.max(0, Math.min(cropRect.y, actualSize.height - 1));
+            const safeW = Math.max(1, Math.min(cropRect.width, actualSize.width - safeX));
+            const safeH = Math.max(1, Math.min(cropRect.height, actualSize.height - safeY));
 
-        finalImage = finalImage.crop(cropRect);
+            console.log(`[ScreenCapture] Cropping around cursor: [x:${safeX}, y:${safeY}, w:${safeW}, h:${safeH}]`);
+            finalImage = finalImage.crop({ x: safeX, y: safeY, width: safeW, height: safeH });
+        }
     }
 
     // Downscale if very large for fast AI transmission

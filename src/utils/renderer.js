@@ -1105,6 +1105,7 @@ const tits = {
 
     // Exam Solver API
     solveExam: options => ipcRenderer.invoke('exam:solve', options),
+    resetSolveState: () => ipcRenderer.invoke('exam:reset-solve-state'),
     setTrayAnswer: (letter, summary) => ipcRenderer.invoke('exam:set-tray-answer', letter, summary),
     clearTrayAnswer: () => ipcRenderer.invoke('exam:clear-tray-answer'),
     refreshTrayIcon: () => ipcRenderer.invoke('exam:refresh-tray-icon'),

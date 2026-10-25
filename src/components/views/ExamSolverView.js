@@ -619,11 +619,31 @@ export class ExamSolverView extends LitElement {
     }
 
     async triggerSolve() {
-        if (this.isSolving) return;
+        if (this.isSolving) {
+            console.warn('[ExamSolverView] Already solving; resetting state to unblock user');
+            this.isSolving = false;
+            this.statusMessage = '';
+            if (window.tits && window.tits.resetSolveState) {
+                await window.tits.resetSolveState();
+            }
+            this.requestUpdate();
+            return;
+        }
+
         this.isSolving = true;
         this.statusMessage = 'Capturing & solving...';
         this.errorMessage = '';
         this.requestUpdate();
+
+        let safetyTimer = setTimeout(() => {
+            if (this.isSolving) {
+                console.warn('[ExamSolverView] UI Safety Timer expired; resetting isSolving');
+                this.isSolving = false;
+                this.statusMessage = '';
+                this.errorMessage = 'Solving timed out. Please check your API key or network and try again.';
+                this.requestUpdate();
+            }
+        }, 18000);
 
         try {
             if (window.tits && window.tits.solveExam) {
@@ -639,6 +659,7 @@ export class ExamSolverView extends LitElement {
             console.error('Error in triggerSolve:', err);
             this.errorMessage = err.message || 'Failed to trigger exam solve.';
         } finally {
+            clearTimeout(safetyTimer);
             this.isSolving = false;
             this.statusMessage = '';
             this.requestUpdate();

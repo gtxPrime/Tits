@@ -352,6 +352,16 @@ function setupExamIpcHandlers() {
         }
     });
 
+    ipcMain.handle('exam:reset-solve-state', () => {
+        try {
+            const { resetSolveState } = require('./utils/examSolver');
+            resetSolveState();
+            return { success: true };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    });
+
     ipcMain.handle('exam:set-tray-answer', (event, letter, summary) => {
         setTrayAnswer(letter, summary);
         return { success: true };

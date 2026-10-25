@@ -92,5 +92,6 @@ typings/
 
 # Electron-Forge
 out/
+*.exe
 .specstory
 .specstory/

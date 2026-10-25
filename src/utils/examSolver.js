@@ -158,8 +158,10 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
         // Attempt Gemini first if configured
         if (apiKey) {
             const ai = new GoogleGenAI({ apiKey: apiKey });
-            const primaryModel = prefs.examVisionModel || 'gemini-2.5-flash';
-            const modelsToTry = [primaryModel, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'].filter(Boolean);
+            const primaryModel = prefs.examVisionModel || 'gemini-flash-latest';
+            const modelsToTry = [primaryModel, 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-2.5-flash'].filter(
+                Boolean
+            );
             const tried = new Set();
             let result = null;
 
@@ -236,10 +238,13 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
 
         if (!rawResponseText) {
             let userFriendlyErr = 'All vision models failed. Check your API key or network connection.';
-            if (lastError && (lastError.includes('reported as leaked') || lastError.includes('PERMISSION_DENIED'))) {
+            if (lastError && (lastError.includes('RESOURCE_EXHAUSTED') || lastError.includes('429'))) {
+                userFriendlyErr =
+                    'Gemini Free Tier quota exceeded (429). Please wait or generate a new free key at aistudio.google.com, or configure Groq in Settings.';
+            } else if (lastError && (lastError.includes('reported as leaked') || lastError.includes('PERMISSION_DENIED'))) {
                 userFriendlyErr =
                     'Google rejected this API key (reported as leaked). Please generate a fresh API key at aistudio.google.com and save it in Settings (BYOK).';
-            } else if (lastError && lastError.includes('API key not valid')) {
+            } else if (lastError && (lastError.includes('API key not valid') || lastError.includes('API_KEY_INVALID'))) {
                 userFriendlyErr = 'Invalid Gemini API key. Please verify your key at aistudio.google.com and paste it in Settings (BYOK).';
             } else if (lastError) {
                 userFriendlyErr = `Vision API Error: ${lastError.slice(0, 150)}`;

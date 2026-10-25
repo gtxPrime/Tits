@@ -1603,11 +1603,12 @@ export class CustomizeView extends LitElement {
     }
 
     renderActiveModelUsageCard() {
+        const currentModel = this.examVisionModel || 'gemini-flash-latest';
         const usage = this.activeModelUsage || {
-            model: this.examVisionModel,
+            model: currentModel,
             meta: {
-                name: this.examVisionModel,
-                provider: this.examVisionModel.startsWith('llama') ? 'Groq LPUs' : 'Google Gemini',
+                name: currentModel,
+                provider: currentModel.startsWith('llama') ? 'Groq LPUs' : 'Google Gemini',
                 dailyLimit: 250,
                 speedLabel: 'Fast (~1.2s)',
                 speedRating: 5,
@@ -1629,11 +1630,23 @@ export class CustomizeView extends LitElement {
         const isLow = usage.status === 'low';
         const statusClass = isDepleted ? 'depleted' : isLow ? 'warning' : 'healthy';
 
+        const toggleIcon = this.showModelComparison
+            ? icons.chevronUp
+                ? icons.chevronUp(14)
+                : html`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="18 15 12 9 6 15"></polyline>
+                  </svg>`
+            : icons.chevronDown
+              ? icons.chevronDown(14)
+              : html`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>`;
+
         return html`
             <div class="model-usage-card">
                 <div class="usage-header">
                     <div class="usage-model-title">
-                        <span style="color:#facc15;display:flex;">${icons.sparkles(16)}</span>
+                        <span style="color:#facc15;display:flex;">${icons.sparkles ? icons.sparkles(16) : ''}</span>
                         <span>${meta.name || usage.model}</span>
                         <span style="font-size:11px;color:#9ca3af;font-weight:400;">(${meta.provider})</span>
                     </div>
@@ -1687,7 +1700,7 @@ export class CustomizeView extends LitElement {
                 </div>
 
                 <button class="comparison-toggle-btn" @click=${this.toggleModelComparison}>
-                    <span style="display:flex;">${this.showModelComparison ? icons.chevronUp(14) : icons.chevronDown(14)}</span>
+                    <span style="display:flex;">${toggleIcon}</span>
                     <span>${this.showModelComparison ? 'Hide Model Comparison Matrix' : 'Which Model is Faster / Better? Compare All Models'}</span>
                 </button>
 

@@ -407,7 +407,7 @@ export const icons = {
             <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
     `,
-    keyboard: (size = 16) => html`
+    chevronDown: (size = 14) => html`
         <svg
             xmlns="http://www.w3.org/2000/svg"
             width="${size}"
@@ -419,16 +419,22 @@ export const icons = {
             stroke-linecap="round"
             stroke-linejoin="round"
         >
-            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-            <path d="M6 8h.001"></path>
-            <path d="M10 8h.001"></path>
-            <path d="M14 8h.001"></path>
-            <path d="M18 8h.001"></path>
-            <path d="M6 12h.001"></path>
-            <path d="M10 12h.001"></path>
-            <path d="M14 12h.001"></path>
-            <path d="M18 12h.001"></path>
-            <path d="M7 16h10"></path>
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+    `,
+    chevronUp: (size = 14) => html`
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="${size}"
+            height="${size}"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <polyline points="18 15 12 9 6 15"></polyline>
         </svg>
     `,
 };

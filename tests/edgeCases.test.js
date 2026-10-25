@@ -94,7 +94,7 @@ test('edgeCases: BYOK API keys are trimmed and stripped of accidental quotes', (
 
     assert.strictEqual(sanitizeApiKey('  "AIzaSy12345"  '), 'AIzaSy12345');
     assert.strictEqual(sanitizeApiKey(" 'gsk_abcdef' "), 'gsk_abcdef');
-    assert.strictEqual(sanitizeApiKey(' AIzaSyA0_0l1exigeuJY6Z2hggNH8xLkSfbwUQk '), 'AIzaSyA0_0l1exigeuJY6Z2hggNH8xLkSfbwUQk');
+    assert.strictEqual(sanitizeApiKey(' AIzaSyMockKey_SampleForTesting_98765 '), 'AIzaSyMockKey_SampleForTesting_98765');
     assert.strictEqual(sanitizeApiKey(null), '');
     assert.strictEqual(sanitizeApiKey(undefined), '');
 });

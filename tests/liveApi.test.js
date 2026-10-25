@@ -2,9 +2,13 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { GoogleGenAI } = require('@google/genai');
 
-const DEMO_KEY = process.env.GEMINI_API_KEY || 'AIzaSyA0_0l1exigeuJY6Z2hggNH8xLkSfbwUQk';
+const DEMO_KEY = process.env.GEMINI_API_KEY || '';
 
 test('liveApi: successfully connects to Gemini 2.5 Flash and responds', async t => {
+    if (!DEMO_KEY) {
+        t.skip('Skipping live Gemini test: No GEMINI_API_KEY provided in environment.');
+        return;
+    }
     try {
         const ai = new GoogleGenAI({ apiKey: DEMO_KEY });
         const startTime = Date.now();
@@ -30,6 +34,10 @@ test('liveApi: successfully connects to Gemini 2.5 Flash and responds', async t 
 });
 
 test('liveApi: returns structured JSON schema for MCQ questions', async t => {
+    if (!DEMO_KEY) {
+        t.skip('Skipping live Gemini test: No GEMINI_API_KEY provided in environment.');
+        return;
+    }
     try {
         const ai = new GoogleGenAI({ apiKey: DEMO_KEY });
 

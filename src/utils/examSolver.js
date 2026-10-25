@@ -221,9 +221,8 @@ async function solveCurrentExamQuestion(mainWindow, overrideOptions = {}) {
             // Channel 2: Stealth HUD Overlay Window
             mainWindow.webContents.send('exam-result', finalResult);
 
-            // Channel 3: Screen Flash Pulse (if MCQ option letter found)
-            if (enablePulse && pulseCount > 0) {
-                triggerFullscreenPulse(pulseCount, prefs.screenPulseColor || '#facc15');
+            // Channel 3: Screen Flash Pulse (only if enabled and window is currently visible)
+            if (enablePulse && pulseCount > 0 && mainWindow.isVisible()) {
                 mainWindow.webContents.send('pulse-screen', { count: pulseCount });
             }
 

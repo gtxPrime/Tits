@@ -15,7 +15,6 @@
   <a href="https://github.com/gtxPrime/Tits/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-21262d?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" /></a>
   <a href="https://github.com/gtxPrime/Tits"><img src="https://img.shields.io/badge/Platform-Windows_%7C_macOS_%7C_Linux-21262d?style=for-the-badge&logo=windows11&logoColor=white" alt="Platform" /></a>
   <a href="https://github.com/gtxPrime/Tits/releases/latest"><img src="https://img.shields.io/github/downloads/gtxPrime/Tits/total?label=Downloads&logo=github&style=for-the-badge&color=21262d&logoColor=white" alt="Downloads" /></a>
-  <a href="https://hub.xerj.org/contributors/gtxPrime"><img src="https://img.shields.io/badge/XERJ_Corpus_Hub-Contributor-8b5cf6?style=for-the-badge" alt="XERJ Corpus Hub Contributor" /></a>
 </p>
 
 </div>

@@ -125,6 +125,7 @@ SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
 - <img src="https://api.iconify.design/fa6-solid/window-maximize.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/window-maximize.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Capture-Excluded Floating HUD:** A frameless, dark-mode overlay displaying the detected answer, confidence level, and step-by-step reasoning, completely invisible to screen shares.
 - <img src="https://api.iconify.design/fa6-solid/border-all.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/border-all.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Screen Edge Pulse:** The perimeter of your monitor emits subtle visual blinks corresponding to the option letter (1 blink = A, 2 blinks = B, 3 = C, 4 = D, 5 = E).
 - <img src="https://api.iconify.design/fa6-solid/headphones.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/headphones.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Earbud Audio Cues:** Discreet, low-amplitude sine wave frequencies delivered directly to headphones (1 tone = A, 2 tones = B), completely inaudible to room microphones.
+- <img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Caps Lock Light (Hardware Stealth):** Blinks or toggles your physical keyboard Caps Lock LED indicator for the answer (1 blink = A, 2 = B, 3 = C, 4 = D). Completely off-screen and 100% invisible to all screen recorders, video calls, or proctoring software.
 
 ---
 
@@ -208,13 +209,14 @@ cheating-daddy
 │   │   ├── tray.js            # Dynamic Windows taskbar notification tray manager
 │   │   ├── window.js          # Native DWM capture exclusion and window affinity
 │   │   ├── screenPulse.js     # Edge blink indicator orchestrator
+│   │   ├── capsLock.js        # Hardware CapsLock LED indicator controller
 │   │   └── gemini.js          # Direct Google GenAI API communication
 │   │
 │   ├── index.js               # Main Electron process, IPC orchestrator, and hotkeys
 │   ├── preload.js             # Context-isolated secure IPC bridge
 │   └── storage.js             # Local encrypted configuration store
 │
-├── tests/                     # 56+ unit and integration tests (100% passing)
+├── tests/                     # 62+ unit and integration tests (100% passing)
 ├── CONTRIBUTING.md            # Guidelines, architectural principles, and PR steps
 ├── LICENSE                    # GNU General Public License v3.0
 └── package.json               # Manifest, dependencies, and build scripts

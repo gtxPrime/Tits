@@ -12,6 +12,7 @@ export class ExamSolverView extends LitElement {
         enableHudOutput: { type: Boolean },
         enableScreenPulse: { type: Boolean },
         enableAudioBeeps: { type: Boolean },
+        enableCapsLockIndicator: { type: Boolean },
         solveKeybind: { type: String },
         hasApiKey: { type: Boolean },
         errorMessage: { type: String },
@@ -577,6 +578,7 @@ export class ExamSolverView extends LitElement {
         this.enableHudOutput = true;
         this.enableScreenPulse = true;
         this.enableAudioBeeps = true;
+        this.enableCapsLockIndicator = false;
         this.solveKeybind = 'Ctrl+Alt+Q';
         this.hasApiKey = true;
         this.errorMessage = '';
@@ -600,6 +602,7 @@ export class ExamSolverView extends LitElement {
             this.enableHudOutput = prefs.enableHudOutput !== false;
             this.enableScreenPulse = prefs.enableScreenPulse !== false;
             this.enableAudioBeeps = prefs.enableAudioBeeps !== false;
+            this.enableCapsLockIndicator = prefs.enableCapsLockIndicator === true;
             this.solveKeybind = keybinds.solveExam || (process.platform === 'darwin' ? 'Alt+Cmd+Q' : 'Ctrl+Alt+Q');
             this.hasApiKey = Boolean(creds.apiKey || creds.groqApiKey);
         } catch (e) {
@@ -766,6 +769,18 @@ export class ExamSolverView extends LitElement {
                                 <span class="channel-desc">Soft sine beeps sent directly to headphone</span>
                             </div>
                             <div class="m3-switch ${this.enableAudioBeeps ? 'active' : ''}"></div>
+                        </div>
+
+                        <div
+                            class="channel-card ${this.enableCapsLockIndicator ? 'active' : ''}"
+                            @click=${() => this.toggleChannel('enableCapsLockIndicator')}
+                        >
+                            <div class="channel-icon">${icons.keyboard(18)}</div>
+                            <div class="channel-info">
+                                <span class="channel-name">Caps Lock Light</span>
+                                <span class="channel-desc">Pulses keyboard LED for option (1=A, 2=B, 3=C)</span>
+                            </div>
+                            <div class="m3-switch ${this.enableCapsLockIndicator ? 'active' : ''}"></div>
                         </div>
                     </div>
                 </div>

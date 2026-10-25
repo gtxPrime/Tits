@@ -46,6 +46,8 @@ const DEFAULT_PREFERENCES = {
     enableHudOutput: true,
     enableScreenPulse: false,
     enableAudioBeeps: true,
+    enableCapsLockIndicator: false,
+    capsLockMode: 'pulse',
     screenPulseColor: '#06b6d4',
     screenPulseDuration: 800,
     beepPitch: 880,

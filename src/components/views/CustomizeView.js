@@ -547,6 +547,8 @@ export class CustomizeView extends LitElement {
         enableHudOutput: { type: Boolean },
         enableScreenPulse: { type: Boolean },
         enableAudioBeeps: { type: Boolean },
+        enableCapsLockIndicator: { type: Boolean },
+        capsLockMode: { type: String },
         autoScrollEnabled: { type: Boolean },
         onProfileChange: { type: Function },
         onLanguageChange: { type: Function },
@@ -599,6 +601,8 @@ export class CustomizeView extends LitElement {
         this.enableHudOutput = true;
         this.enableScreenPulse = true;
         this.enableAudioBeeps = true;
+        this.enableCapsLockIndicator = false;
+        this.capsLockMode = 'pulse';
         this.contentProtection = true;
         this.beepVolume = 0.2;
         this.beepPitch = 880;
@@ -641,6 +645,8 @@ export class CustomizeView extends LitElement {
             this.enableHudOutput = prefs.enableHudOutput !== false;
             this.enableScreenPulse = prefs.enableScreenPulse !== false;
             this.enableAudioBeeps = prefs.enableAudioBeeps !== false;
+            this.enableCapsLockIndicator = prefs.enableCapsLockIndicator === true;
+            this.capsLockMode = prefs.capsLockMode || 'pulse';
             this.contentProtection = prefs.contentProtection !== false;
             this.beepVolume = prefs.beepVolume ?? 0.2;
             this.beepPitch = prefs.beepPitch ?? 880;
@@ -1166,6 +1172,18 @@ export class CustomizeView extends LitElement {
         }
     }
 
+    async handleCapsLockModeChange(e) {
+        this.capsLockMode = e.target.value;
+        await tits.storage.updatePreference('capsLockMode', this.capsLockMode);
+        this.requestUpdate();
+    }
+
+    testCapsLock() {
+        if (window.tits && window.tits.triggerCapsLockPulse) {
+            window.tits.triggerCapsLockPulse(2);
+        }
+    }
+
     renderModeSection() {
         return html`
             <section class="m3-surface">
@@ -1445,6 +1463,27 @@ export class CustomizeView extends LitElement {
                         <span class="toggle-icon">${icons.headphones(16)}</span>
                         <span class="toggle-label">Earbud Audio Cues</span>
                         <div class="m3-switch ${this.enableAudioBeeps ? 'active' : ''}"></div>
+                    </div>
+                    <div class="toggle-row" @click=${() => this.handleExamPrefToggle('enableCapsLockIndicator')}>
+                        <span class="toggle-icon">${icons.keyboard(16)}</span>
+                        <span class="toggle-label">Caps Lock Light (Hardware)</span>
+                        <div class="m3-switch ${this.enableCapsLockIndicator ? 'active' : ''}"></div>
+                    </div>
+                </div>
+
+                <div class="form-grid" style="margin-top:14px;">
+                    <div class="form-group">
+                        <label class="form-label">Caps Lock Light Behavior</label>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <select class="control" .value=${this.capsLockMode} @change=${this.handleCapsLockModeChange}>
+                                <option value="pulse">Pulse Option Count (A=1, B=2, C=3, D=4)</option>
+                                <option value="toggle">Toggle On / Off per Answer</option>
+                            </select>
+                            <button class="action-btn-secondary" @click=${this.testCapsLock}>
+                                ${icons.keyboard(14)}
+                                <span>Test Light</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

@@ -378,4 +378,16 @@ function setupExamIpcHandlers() {
         refreshTrayIcon();
         return { success: true };
     });
+
+    ipcMain.handle('exam:trigger-capslock-pulse', (event, count) => {
+        const { pulseCapsLock } = require('./utils/capsLock');
+        pulseCapsLock(count || 2, 180);
+        return { success: true };
+    });
+
+    ipcMain.handle('exam:toggle-capslock', () => {
+        const { toggleCapsLock } = require('./utils/capsLock');
+        toggleCapsLock();
+        return { success: true };
+    });
 }

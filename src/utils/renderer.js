@@ -1111,6 +1111,8 @@ const tits = {
     updateMouseTrigger: (enabled, duration) => ipcRenderer.invoke('exam:update-mouse-trigger', enabled, duration),
     playStealthBeeps,
     triggerScreenPulse,
+    triggerCapsLockPulse: count => ipcRenderer.invoke('exam:trigger-capslock-pulse', count),
+    toggleCapsLock: () => ipcRenderer.invoke('exam:toggle-capslock'),
 
     // Window controls
     toggleVisibility: () => ipcRenderer.invoke('toggle-window-visibility'),

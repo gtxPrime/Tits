@@ -50,16 +50,48 @@ module.exports = {
             platforms: ['darwin'],
         },
         {
+            name: '@electron-forge/maker-deb',
+            platforms: ['linux'],
+            config: {
+                options: {
+                    name: 'tits',
+                    productName: 'Tits',
+                    genericName: 'Test Intelligence & Tutoring System',
+                    description: 'TITS - Test Intelligence & Tutoring System. Open-source BYOK exam assistant and tutor.',
+                    categories: ['Utility', 'Education', 'Development'],
+                    icon: path.resolve(__dirname, 'src/assets/logo.png'),
+                    maintainer: 'gtxPrime <gtxprime.com@gmail.com>',
+                    homepage: 'https://github.com/gtxPrime/Tits',
+                },
+            },
+        },
+        {
+            name: '@electron-forge/maker-rpm',
+            platforms: ['linux'],
+            config: {
+                options: {
+                    name: 'tits',
+                    productName: 'Tits',
+                    genericName: 'Test Intelligence & Tutoring System',
+                    description: 'TITS - Test Intelligence & Tutoring System. Open-source BYOK exam assistant and tutor.',
+                    categories: ['Utility', 'Education', 'Development'],
+                    icon: path.resolve(__dirname, 'src/assets/logo.png'),
+                    homepage: 'https://github.com/gtxPrime/Tits',
+                },
+            },
+        },
+        {
             name: '@reforged/maker-appimage',
             platforms: ['linux'],
             config: {
                 options: {
-                    name: 'TITS',
-                    productName: 'TITS - Test Intelligence & Tutoring System',
+                    name: 'tits',
+                    bin: 'Tits',
+                    productName: 'Tits',
                     genericName: 'Test Intelligence & Tutoring System',
                     description: 'TITS - Test Intelligence & Tutoring System. Open-source BYOK exam assistant and tutor.',
                     categories: ['Development', 'Education'],
-                    icon: 'src/assets/logo.png',
+                    icon: path.resolve(__dirname, 'src/assets/logo.png'),
                 },
             },
         },

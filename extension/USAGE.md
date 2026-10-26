@@ -1,13 +1,13 @@
 ## Browser extension: installation and usage
 
-The browser companion is in [`extension/`](). It runs separately from the Electron desktop app: you do not need to build or launch the desktop app to load it. Use it only on pages where you have permission to edit and paste. It does not make synthetic input into trusted physical keyboard input, and no compatibility or detection guarantee is made.
+The browser companion is in [`extension/`](<>). It runs separately from the Electron desktop app: you do not need to build or launch the desktop app to load it. Use it only on pages where you have permission to edit and paste. It does not make synthetic input into trusted physical keyboard input, and no compatibility or detection guarantee is made.
 
 ### Choose the right manifest
 
-| Browser | Manifest to use | Installation |
-| --- | --- | --- |
-| Chrome, Brave, Edge | `extension/manifest.json` (same background setup as `manifest.chrome.json`) | Load unpacked folder |
-| Firefox | A separate copy of the folder with `manifest.firefox.json` copied over `manifest.json` | Load Temporary Add-on |
+| Browser             | Manifest to use                                                                        | Installation          |
+| ------------------- | -------------------------------------------------------------------------------------- | --------------------- |
+| Chrome, Brave, Edge | `extension/manifest.json` (same background setup as `manifest.chrome.json`)            | Load unpacked folder  |
+| Firefox             | A separate copy of the folder with `manifest.firefox.json` copied over `manifest.json` | Load Temporary Add-on |
 
 Chrome-family MV3 extensions use `background.service_worker`; Firefox uses `background.scripts`. Loading the Chrome manifest in Firefox causes `background.service_worker is currently disabled. Add background.scripts.` Do not switch the manifest in the folder already loaded by Brave. Make a separate Firefox copy instead.
 
@@ -55,18 +55,41 @@ For code, start with **Typo Rate = 0%** so the extension does not deliberately i
 
 ### Popup controls
 
-| Control | Current behavior |
-| --- | --- |
-| **Paste Unblocker** | Enables the page/editor compatibility patches and normal paste handling. Defaults on. |
-| **Typing Paste** | Routes normal paste and the Paste action through character-by-character insertion. Defaults off. |
-| **Speed** | Base delay per character, 20-130 ms in the current popup; lower is faster. Timing includes extra variation and pauses, so this is not a fixed completion time. Default 65 ms. |
-| **Typo Rate** | 0-10% setting for optional deliberate adjacent-key mistakes followed by deletion/correction. Default 4%; use 0% for literal code/text transfer. |
-| **Paste** | Inserts clipboard text into the focused editor/input. When Typing Paste is enabled, it starts the typing stream instead. |
-| **Type** | Starts character-by-character insertion regardless of the Typing Paste toggle. |
-| **Stop** | Cancels the active stream. Already inserted text remains; cancellation does not roll back changes. |
-| **Unlock** | Runs the existing page/editor compatibility scan again. It is not a permission grant to modify another service's protected content. |
+| Control                | Current behavior                                                                                                                                                              |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Paste Unblocker**    | Enables the page/editor compatibility patches and normal paste handling. Defaults on.                                                                                         |
+| **Typing Simulation**  | Routes normal paste and the Paste action through character-by-character insertion. Defaults off.                                                                              |
+| **Auto-Backspace Fix** | Enables cognitive delay, backspace erasure, and self-correction when typos occur. Defaults on.                                                                                 |
+| **Speed**              | Base delay per character, 20-130 ms in the popup; lower is faster. Timing includes human variance and punctuation pauses. Default 65 ms.                                     |
+| **Typo Rate**          | 0-15% setting for physical QWERTY neighbor mistakes followed by backspace correction. Default 4%; use 0% for literal code/text transfer.                                      |
+| **Remote Relay**       | Connects two browser instances over local WebSocket rooms. User 2 sends text remotely into User 1's active tab with synchronized typing parameters.                            |
+| **Paste**              | Inserts clipboard text into the focused editor/input. When Typing Simulation is enabled, it starts the typing stream instead.                                                 |
+| **Type**               | Starts character-by-character insertion regardless of the Typing Simulation toggle.                                                                                          |
+| **Stop**               | Cancels the active stream. Already inserted text remains; cancellation does not roll back changes.                                                                            |
+| **Unlock**             | Runs the existing page/editor compatibility scan again. It is not a permission grant to modify another service's protected content.                                           |
+| **Copy / Export Log**  | Copies or downloads complete diagnostic reports including active tabs, relay connection state, speed/typo settings, and chronological event logs.                             |
 
-Settings are saved in extension local storage. The status pill shows the configured mode, not proof that text reached the target or was saved correctly. Popup acknowledgements likewise do not replace checking the editor.
+Settings are saved in extension local storage. When using Remote Relay, your configured speed, typo rate, and auto-backspace settings are automatically transmitted to the receiver tab.
+
+### Remote Peer Relay: Dual-User Workflow
+
+Use the Remote Peer Relay when User 1 is in a restricted testing browser/exam tab and User 2 is assisting from another browser instance, laptop, tablet, or phone on the same network:
+
+1. **Launch Relay Server**: Start the TITS desktop app (or run `node src/utils/remoteServer.js`). The server listens on `ws://<LAN_IP>:59432`.
+2. **Connect Receiver (User 1)**:
+   - In User 1's browser, open the extension popup.
+   - Enter the Server URL and a shared Room Code (e.g. `STEALTH-165`).
+   - Click **Connect**. Status shows `🟡 Solo in Room`.
+   - Open and focus the target test/editor tab (e.g. `OnlineNotepad.org`, Monaco, Ace).
+3. **Connect Sender (User 2)**:
+   - In User 2's browser, open the extension popup.
+   - Enter the same Server URL and Room Code.
+   - Click **Connect**. Both instances will show `🟢 2 Peers Live`.
+4. **Relay Text**:
+   - Choose remote injection mode: `⚡ Instant Paste` or `⌨ Simulated Typing`.
+   - Paste or type text into User 2's popup textarea.
+   - Click **Send** or press `Alt+Enter` / `Ctrl+Enter`.
+   - Text is injected directly into User 1's active webpage tab. User 2's activity terminal displays `Peer feedback: Injected into tab ✓`.
 
 Turning Paste Unblocker off is not a full undo of page changes: some patches and editor-state changes may already have happened. To return to an unmodified page, disable the extension and reload the page. Switching Typing Paste off does not itself replace Stop; use Stop or Escape to cancel a running stream.
 
@@ -74,14 +97,14 @@ Turning Paste Unblocker off is not a full undo of page changes: some patches and
 
 Click the target first. Browser/OS shortcut conflicts may require reassignment.
 
-| Shortcut | Action |
-| --- | --- |
-| `Ctrl+V` / `Cmd+V` | Normal paste; typing insertion when Typing Paste is on |
-| `Alt+V` | Paste clipboard text; respects Typing Paste mode |
-| `Alt+Shift+V` | Start typing paste explicitly |
-| `Escape` | Cancel the active typing stream in the page |
-| `Alt+X` | Stop typing |
-| `Alt+U` | In-page compatibility scan; this is an in-page shortcut, not a manifest command |
+| Shortcut           | Action                                                                          |
+| ------------------ | ------------------------------------------------------------------------------- |
+| `Ctrl+V` / `Cmd+V` | Normal paste; typing insertion when Typing Paste is on                          |
+| `Alt+V`            | Paste clipboard text; respects Typing Paste mode                                |
+| `Alt+Shift+V`      | Start typing paste explicitly                                                   |
+| `Escape`           | Cancel the active typing stream in the page                                     |
+| `Alt+X`            | Stop typing                                                                     |
+| `Alt+U`            | In-page compatibility scan; this is an in-page shortcut, not a manifest command |
 
 Chrome-family command assignments can be checked on the browser's extension keyboard-shortcut page. Firefox exposes extension shortcuts through the Add-ons Manager's shortcut controls. The in-page fallback needs the target page focused. Some system shortcuts cannot be intercepted.
 
@@ -103,17 +126,17 @@ Chrome-family command assignments can be checked on the browser's extension keyb
 
 ### Troubleshooting
 
-| Symptom | Check |
-| --- | --- |
-| Firefox service-worker error | Use the separate Firefox copy with `background.scripts` in its `manifest.json`, as above. |
-| Chrome rejects background scripts | Use the Chrome `manifest.json` / `manifest.chrome.json`, not the Firefox manifest. |
-| Nothing happens | Reload the extension and page, check site access, click the intended input, and verify the clipboard contains plain text. |
-| Popup shows "Focus first" | Clipboard access or target state may be unavailable; the message does not identify a single cause. Try native paste in an editable local document first. |
-| Wrong input receives text | Stop, focus the intended editor again and avoid opening another input during insertion. Multiple frames/editors can affect target selection. |
-| Shortcut does nothing | Check browser/OS conflicts and reassignment; try a popup action or native paste. |
-| Partial text remains after Stop | Expected: Stop cancels future characters, it does not undo inserted text. Review and undo manually if needed. |
-| Text differs from clipboard | Set typo rate to 0%, check indentation/selection, and reproduce with a small sample on an editable document you control. Report the browser/version, mode, sample and actual result without private data. |
-| Turning off a switch does not restore restrictions | Disable the extension and reload the page to remove page-lifetime patches. |
+| Symptom                                            | Check                                                                                                                                                                                                     |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Firefox service-worker error                       | Use the separate Firefox copy with `background.scripts` in its `manifest.json`, as above.                                                                                                                 |
+| Chrome rejects background scripts                  | Use the Chrome `manifest.json` / `manifest.chrome.json`, not the Firefox manifest.                                                                                                                        |
+| Nothing happens                                    | Reload the extension and page, check site access, click the intended input, and verify the clipboard contains plain text.                                                                                 |
+| Popup shows "Focus first"                          | Clipboard access or target state may be unavailable; the message does not identify a single cause. Try native paste in an editable local document first.                                                  |
+| Wrong input receives text                          | Stop, focus the intended editor again and avoid opening another input during insertion. Multiple frames/editors can affect target selection.                                                              |
+| Shortcut does nothing                              | Check browser/OS conflicts and reassignment; try a popup action or native paste.                                                                                                                          |
+| Partial text remains after Stop                    | Expected: Stop cancels future characters, it does not undo inserted text. Review and undo manually if needed.                                                                                             |
+| Text differs from clipboard                        | Set typo rate to 0%, check indentation/selection, and reproduce with a small sample on an editable document you control. Report the browser/version, mode, sample and actual result without private data. |
+| Turning off a switch does not restore restrictions | Disable the extension and reload the page to remove page-lifetime patches.                                                                                                                                |
 
 ### Verified scope and local tests
 
@@ -133,4 +156,3 @@ Port 8989 must be free. The test starts a local editable fixture, loads the unpa
 For repair-specific details, see [`extension/REPAIR-NOTES.md`](REPAIR-NOTES.md). Mozilla documents the cross-browser background distinction in its [background manifest reference](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/background).
 
 ---
-

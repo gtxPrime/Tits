@@ -1,10 +1,10 @@
 {
-  "private": true,
-  "scripts": {
-    "test": "node run.cjs"
-  },
-  "devDependencies": {
-    "playwright": "1.64.1",
-    "ace-builds": "1.45.2"
-  }
+    "private": true,
+    "scripts": {
+        "test": "node run.cjs"
+    },
+    "devDependencies": {
+        "playwright": "1.64.1",
+        "ace-builds": "1.45.2"
+    }
 }

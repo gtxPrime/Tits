@@ -800,6 +800,12 @@ export class CustomizeView extends LitElement {
         isRestoring: { type: Boolean },
         clearStatusMessage: { type: String },
         clearStatusType: { type: String },
+        remoteRunning: { type: Boolean },
+        remoteWsUrls: { type: Array },
+        remoteClients: { type: Number },
+        remoteStatus: { type: String },
+        remoteStatusType: { type: String },
+        remoteCopied: { type: Boolean },
     };
 
     constructor() {
@@ -866,7 +872,15 @@ export class CustomizeView extends LitElement {
         this.isExportingLogs = false;
         this.showLogsPreview = false;
 
+        this.remoteRunning = false;
+        this.remoteWsUrls = [];
+        this.remoteClients = 0;
+        this.remoteStatus = '';
+        this.remoteStatusType = '';
+        this.remoteCopied = false;
+
         this._loadFromStorage();
+        this._refreshRemoteStatus();
     }
 
     getThemes() {
@@ -2378,6 +2392,168 @@ export class CustomizeView extends LitElement {
         }
     }
 
+    async _refreshRemoteStatus() {
+        try {
+            const { ipcRenderer } = require('electron');
+            const res = await ipcRenderer.invoke('remote:status');
+            if (res && res.success) {
+                this.remoteRunning = res.running;
+                this.remoteWsUrls = res.wsUrls || [];
+                this.remoteClients = res.connectedClients || 0;
+            }
+        } catch (e) {
+            console.warn('Failed to refresh remote status:', e);
+        }
+        this.requestUpdate();
+    }
+
+    async startRemote() {
+        try {
+            const { ipcRenderer } = require('electron');
+            const res = await ipcRenderer.invoke('remote:start', 59432);
+            if (res && res.success) {
+                this.remoteRunning = true;
+                this.remoteWsUrls = res.wsUrls || [];
+                this.remoteClients = 0;
+                this.remoteStatus = 'Remote server started!';
+                this.remoteStatusType = 'success';
+            } else {
+                this.remoteStatus = `Failed: ${res.error || 'Unknown error'}`;
+                this.remoteStatusType = 'error';
+            }
+        } catch (e) {
+            this.remoteStatus = `Error: ${e.message}`;
+            this.remoteStatusType = 'error';
+        }
+        this.requestUpdate();
+        setTimeout(() => { this.remoteStatus = ''; this.requestUpdate(); }, 3000);
+    }
+
+    async stopRemote() {
+        try {
+            const { ipcRenderer } = require('electron');
+            await ipcRenderer.invoke('remote:stop');
+            this.remoteRunning = false;
+            this.remoteWsUrls = [];
+            this.remoteClients = 0;
+            this.remoteStatus = 'Server stopped.';
+            this.remoteStatusType = 'success';
+        } catch (e) {
+            this.remoteStatus = `Error: ${e.message}`;
+            this.remoteStatusType = 'error';
+        }
+        this.requestUpdate();
+        setTimeout(() => { this.remoteStatus = ''; this.requestUpdate(); }, 3000);
+    }
+
+    async copyWsUrl(url) {
+        try {
+            await navigator.clipboard.writeText(url);
+            this.remoteCopied = true;
+            this.requestUpdate();
+            setTimeout(() => { this.remoteCopied = false; this.requestUpdate(); }, 2000);
+        } catch (e) {
+            console.warn('Copy failed', e);
+        }
+    }
+
+    renderRemoteSection() {
+        const primaryUrl = this.remoteWsUrls[0] || '';
+        return html`
+            <section class="m3-surface" style="border-color: rgba(139,92,246,0.25);">
+                <div class="surface-header">
+                    <div class="surface-title" style="color:#a78bfa;">
+                        <span class="surface-icon" style="color:#a78bfa;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <path d="M8 21h8M12 17v4"/>
+                                <path d="M7 9h.01M12 9h.01M17 9h.01"/>
+                            </svg>
+                        </span>
+                        <span>Remote Extension</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        ${this.remoteRunning ? html`
+                            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#10b981;padding:4px 12px;border-radius:999px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">
+                                <span style="width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;"></span>
+                                Live &bull; ${this.remoteClients} connected
+                            </span>` : html`
+                            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#6b7280;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+                                <span style="width:7px;height:7px;border-radius:50%;background:#6b7280;"></span>
+                                Offline
+                            </span>`}
+                    </div>
+                </div>
+                <div class="surface-subtitle">
+                    Start a local WebSocket server and paste its URL into the browser extension to send text from any tab directly to your active input.
+                    Supports both <strong style="color:#f9fafb;">instant paste</strong> and <strong style="color:#f9fafb;">human typing simulation</strong>.
+                </div>
+
+                ${this.remoteRunning ? html`
+                    <!-- Active state -->
+                    <div style="margin-top:4px;display:flex;flex-direction:column;gap:10px;">
+                        <div style="font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:0.05em;text-transform:uppercase;">WebSocket URL</div>
+                        ${this.remoteWsUrls.map((url, i) => html`
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="flex:1;font-family:var(--font-mono, monospace);font-size:12px;color:#c4b5fd;background:#1a1b26;border:1px solid rgba(139,92,246,0.3);border-radius:10px;padding:9px 14px;letter-spacing:0.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${url}">
+                                    ${url}
+                                </div>
+                                <button
+                                    class="icon-btn"
+                                    @click=${() => this.copyWsUrl(url)}
+                                    title="Copy to clipboard"
+                                    style="border-radius:10px;padding:9px 14px;font-size:11px;font-weight:700;color:${i === 0 && this.remoteCopied ? '#10b981' : '#a78bfa'};border-color:rgba(139,92,246,0.3);background:rgba(139,92,246,0.1);"
+                                >
+                                    ${i === 0 && this.remoteCopied ? 'Copied!' : 'Copy'}
+                                </button>
+                            </div>
+                        `)}
+                        <div style="font-size:11px;color:#6b7280;line-height:1.5;padding:10px 14px;background:rgba(139,92,246,0.06);border-radius:10px;border:1px solid rgba(139,92,246,0.15);">
+                            📋 Copy the URL above &rarr; open the TITS extension in your browser &rarr; paste into the Remote tab &rarr; type your text &rarr; Send.
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:4px;">
+                        <button
+                            class="action-btn-secondary"
+                            @click=${() => this._refreshRemoteStatus()}
+                            style="display:inline-flex;align-items:center;gap:6px;"
+                        >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                            Refresh
+                        </button>
+                        <button
+                            class="action-btn-secondary"
+                            @click=${() => this.stopRemote()}
+                            style="color:#f87171;border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.06);"
+                        >
+                            Stop Server
+                        </button>
+                    </div>
+                ` : html`
+                    <!-- Idle state -->
+                    <div style="display:flex;gap:10px;align-items:center;margin-top:4px;">
+                        <button
+                            class="action-btn-primary"
+                            @click=${() => this.startRemote()}
+                            style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;box-shadow:0 2px 12px rgba(139,92,246,0.35);"
+                        >
+                            Start Remote Server
+                        </button>
+                        <span style="font-size:11px;color:#6b7280;">Port 59432</span>
+                    </div>
+                `}
+
+                ${this.remoteStatus ? html`
+                    <div style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:8px;display:inline-block;margin-top:4px;
+                        color:${this.remoteStatusType === 'success' ? '#10b981' : '#f87171'};
+                        background:${this.remoteStatusType === 'success' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'};
+                        border:1px solid ${this.remoteStatusType === 'success' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'};"
+                    >${this.remoteStatus}</div>
+                ` : ''}
+            </section>
+        `;
+    }
+
     renderDiagnosticsSection() {
         const isMac = process.platform === 'darwin';
         const isLinux = process.platform === 'linux';
@@ -2504,7 +2680,7 @@ export class CustomizeView extends LitElement {
 
                 ${this.renderModeSection()} ${this.renderBYOKSection()} ${this.renderExamSettingsSection()} ${this.renderStealthAndSecuritySection()}
                 ${this.renderAudioSection()} ${this.renderLanguageSection()} ${this.renderAppearanceSection()} ${this.renderKeyboardSection()}
-                ${this.renderDiagnosticsSection()} ${this.renderPrivacySection()}
+                ${this.renderRemoteSection()} ${this.renderDiagnosticsSection()} ${this.renderPrivacySection()}
             </div>
         `;
     }

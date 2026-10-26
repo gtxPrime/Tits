@@ -297,4 +297,82 @@ describe('Ace & Universal Paste Unlocker Extension Suite', () => {
         const cleaned = sanitizePastedText(corruptedInput);
         assert.strictEqual(cleaned, 'a = 5\nprice = 50');
     });
+
+    test('Extension Remote Client: constructs valid injection payload and validates parameters', () => {
+        function buildRemotePayload(text, mode, speed) {
+            const trimmed = (text || '').trim();
+            if (!trimmed) return null;
+            const validMode = mode === 'type' ? 'type' : 'paste';
+            const safeSpeed = typeof speed === 'number' && speed >= 10 ? speed : 65;
+            return {
+                type: 'inject',
+                text,
+                mode: validMode,
+                delay: safeSpeed,
+            };
+        }
+
+        // Valid paste payload
+        const p1 = buildRemotePayload('Hello World', 'paste', 65);
+        assert.deepStrictEqual(p1, {
+            type: 'inject',
+            text: 'Hello World',
+            mode: 'paste',
+            delay: 65,
+        });
+
+        // Valid type payload with custom speed
+        const p2 = buildRemotePayload('Code snippet', 'type', 45);
+        assert.deepStrictEqual(p2, {
+            type: 'inject',
+            text: 'Code snippet',
+            mode: 'type',
+            delay: 45,
+        });
+
+        // Invalid mode defaults to paste
+        const p3 = buildRemotePayload('Fallback test', 'unknown_mode', 50);
+        assert.strictEqual(p3.mode, 'paste');
+
+        // Empty/whitespace text produces null (guarded from sending)
+        assert.strictEqual(buildRemotePayload('', 'paste', 65), null);
+        assert.strictEqual(buildRemotePayload('   \n\t  ', 'paste', 65), null);
+        assert.strictEqual(buildRemotePayload(null, 'paste', 65), null);
+    });
+
+    test('Extension Remote Client: processes ack status and controls UI feedback states', () => {
+        function handleAck(ack, state) {
+            if (ack && ack.type === 'ack') {
+                if (ack.status === 'ok') {
+                    return {
+                        ...state,
+                        text: '',
+                        hint: `Sent ✓ (${ack.message || 'ok'})`,
+                        hintType: 'ok',
+                    };
+                } else {
+                    return {
+                        ...state,
+                        hint: `Error: ${ack.message}`,
+                        hintType: 'err',
+                    };
+                }
+            }
+            return state;
+        }
+
+        const initialState = { text: 'my secret answer', hint: 'Sending…', hintType: '' };
+
+        // Successful ack
+        const okState = handleAck({ type: 'ack', status: 'ok', message: 'Injected (paste)' }, initialState);
+        assert.strictEqual(okState.text, '');
+        assert.strictEqual(okState.hintType, 'ok');
+        assert.ok(okState.hint.includes('Sent ✓'));
+
+        // Error ack
+        const errState = handleAck({ type: 'ack', status: 'error', message: 'Target window lost' }, initialState);
+        assert.strictEqual(errState.text, 'my secret answer'); // text preserved on error
+        assert.strictEqual(errState.hintType, 'err');
+        assert.strictEqual(errState.hint, 'Error: Target window lost');
+    });
 });

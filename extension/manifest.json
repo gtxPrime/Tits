@@ -2,12 +2,12 @@
     "manifest_version": 3,
     "name": "TITS - Paste & Editor Unlocker",
     "short_name": "TITS",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "description": "TITS Companion: Enables pasting on any website, unlocks Ace & Monaco editors, and types like a human with realistic typos & backspace fixes.",
     "permissions": ["activeTab", "storage", "contextMenus", "clipboardRead", "scripting"],
     "host_permissions": ["<all_urls>"],
     "background": {
-        "scripts": ["background.js"]
+        "service_worker": "background.js"
     },
     "content_scripts": [
         {
@@ -67,12 +67,6 @@
                 "mac": "Alt+X"
             },
             "description": "Stop current human typing simulation"
-        }
-    },
-    "browser_specific_settings": {
-        "gecko": {
-            "id": "tits-unlocker@gtxprime.dev",
-            "strict_min_version": "109.0"
         }
     }
 }

@@ -19,22 +19,42 @@
         humanTypingActive: false,
     };
 
+    let lastShortcut = { action: '', at: 0 };
+    async function runPasteAction(action, shortcut = false) {
+        if (shortcut) {
+            const now = Date.now();
+            if (lastShortcut.action === action && now - lastShortcut.at < 250) return true;
+            lastShortcut = { action, at: now };
+        }
+        const text = await getClipboardText();
+        if (typeof text !== 'string' || !text.length) return false;
+        postToMainWorld(action === 'FORCE_PASTE' ? 'EXECUTE_FORCE_PASTE' : 'EXECUTE_HUMAN_TYPING', { text });
+        return true;
+    }
+
     /* ==========================================================================
      1. FALLBACK MAIN-WORLD SCRIPT INJECTION
      ========================================================================== */
 
     function injectMainWorldFallback() {
-        const checkScript = document.createElement('script');
-        checkScript.textContent = `
-      if (!window.__TITS_UNLOCKER_ACTIVE__) {
-        const s = document.createElement('script');
-        s.src = "${ext.runtime.getURL('content-main.js')}";
-        s.onload = () => s.remove();
-        (document.head || document.documentElement).appendChild(s);
-      }
-    `;
-        (document.head || document.documentElement).appendChild(checkScript);
-        checkScript.remove();
+        const inject = () => {
+            const root = document.head || document.documentElement;
+            if (!root) return false;
+            const script = document.createElement('script');
+            script.src = ext.runtime.getURL('content-main.js');
+            script.onload = () => {
+                script.remove();
+                syncConfigWithMainWorld();
+            };
+            script.onerror = () => script.remove();
+            root.appendChild(script);
+            return true;
+        };
+        if (inject()) return;
+        const observer = new MutationObserver(() => {
+            if (inject()) observer.disconnect();
+        });
+        observer.observe(document, { childList: true, subtree: true });
     }
 
     injectMainWorldFallback();
@@ -136,23 +156,15 @@
             const isShift = e.shiftKey;
             const key = (e.key || '').toLowerCase();
 
-            // Alt + V : Force Paste
-            if (isAlt && !isShift && key === 'v') {
+            // Keep an in-page fallback: browser shortcut assignment may be
+            // unavailable or remapped. Deduplicate with the commands API path.
+            if (isAlt && key === 'v') {
                 e.preventDefault();
-                const text = await getClipboardText();
-                if (text) {
-                    postToMainWorld('EXECUTE_FORCE_PASTE', { text });
-                }
+                await runPasteAction(isShift ? 'HUMAN_TYPING_PASTE' : 'FORCE_PASTE', true);
                 return;
             }
-
-            // Alt + Shift + V : Explicit Human Typing Paste
-            if (isAlt && isShift && key === 'v') {
-                e.preventDefault();
-                const text = await getClipboardText();
-                if (text) {
-                    postToMainWorld('EXECUTE_HUMAN_TYPING', { text });
-                }
+            if (isAlt && key === 'x') {
+                postToMainWorld('STOP_HUMAN_TYPING');
                 return;
             }
 
@@ -163,10 +175,8 @@
                 return;
             }
 
-            // Alt + X or Escape : Stop Typing
-            if ((isAlt && key === 'x') || key === 'escape') {
-                postToMainWorld('STOP_HUMAN_TYPING');
-            }
+            // Escape remains available even if extension shortcuts are remapped.
+            if (key === 'escape') postToMainWorld('STOP_HUMAN_TYPING');
         },
         true
     );
@@ -180,24 +190,11 @@
 
         switch (request.action) {
             case 'FORCE_PASTE':
-                getClipboardText().then(text => {
-                    if (text) {
-                        postToMainWorld('EXECUTE_FORCE_PASTE', { text });
-                        sendResponse({ success: true });
-                    } else {
-                        sendResponse({ success: false, reason: 'Clipboard empty or inaccessible' });
-                    }
-                });
-                return true;
-
             case 'HUMAN_TYPING_PASTE':
-                getClipboardText().then(text => {
-                    if (text) {
-                        postToMainWorld('EXECUTE_HUMAN_TYPING', { text });
-                        sendResponse({ success: true });
-                    } else {
-                        sendResponse({ success: false, reason: 'Clipboard empty or inaccessible' });
-                    }
+                // Only the focused frame handles browser-wide shortcuts.
+                if (request.fromShortcut && !document.hasFocus()) return;
+                runPasteAction(request.action, !!request.fromShortcut).then(success => {
+                    sendResponse({ success, reason: success ? undefined : 'Clipboard empty or inaccessible' });
                 });
                 return true;
 

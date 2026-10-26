@@ -8,12 +8,12 @@ const ext = typeof browser !== 'undefined' ? browser : chrome;
 // Initialize context menus and default settings
 ext.runtime.onInstalled.addListener(() => {
     // Set default configuration in storage
-    ext.storage.local.get(['enabled', 'stealthMode', 'autoUnlockAce', 'enableContextMenu'], res => {
+    ext.storage.local.get(['pasteEnabled', 'typingPasteEnabled', 'typingSpeed', 'typoRate'], res => {
         ext.storage.local.set({
-            enabled: res.enabled !== undefined ? res.enabled : true,
-            stealthMode: res.stealthMode !== undefined ? res.stealthMode : false,
-            autoUnlockAce: res.autoUnlockAce !== undefined ? res.autoUnlockAce : true,
-            enableContextMenu: res.enableContextMenu !== undefined ? res.enableContextMenu : true,
+            pasteEnabled: res.pasteEnabled ?? true,
+            typingPasteEnabled: res.typingPasteEnabled ?? false,
+            typingSpeed: res.typingSpeed ?? 65,
+            typoRate: res.typoRate ?? 0.04,
         });
     });
 
@@ -49,10 +49,10 @@ ext.contextMenus.onClicked.addListener((info, tab) => {
 
     switch (info.menuItemId) {
         case 'force-paste-menu':
-            ext.tabs.sendMessage(tab.id, { action: 'FORCE_PASTE' });
+            ext.tabs.sendMessage(tab.id, { action: 'FORCE_PASTE' }, { frameId: info.frameId ?? 0 });
             break;
         case 'stealth-paste-menu':
-            ext.tabs.sendMessage(tab.id, { action: 'STEALTH_PASTE', speedMs: 5 });
+            ext.tabs.sendMessage(tab.id, { action: 'HUMAN_TYPING_PASTE' }, { frameId: info.frameId ?? 0 });
             break;
         case 'unlock-editors-menu':
             ext.tabs.sendMessage(tab.id, { action: 'TRIGGER_UNLOCK_ALL' });
@@ -67,10 +67,12 @@ ext.commands.onCommand.addListener(command => {
         const tabId = tabs[0].id;
 
         if (command === 'force-paste') {
-            ext.tabs.sendMessage(tabId, { action: 'FORCE_PASTE' });
-        } else if (command === 'stealth-paste') {
-            ext.tabs.sendMessage(tabId, { action: 'STEALTH_PASTE', speedMs: 5 });
-        } else if (command === 'toggle-unlock') {
+            ext.tabs.sendMessage(tabId, { action: 'FORCE_PASTE', fromShortcut: true });
+        } else if (command === 'toggle-typing-paste') {
+            ext.tabs.sendMessage(tabId, { action: 'HUMAN_TYPING_PASTE', fromShortcut: true });
+        } else if (command === 'stop-typing') {
+            ext.tabs.sendMessage(tabId, { action: 'STOP_TYPING' });
+        } else if (command === 'unlock-all') {
             ext.tabs.sendMessage(tabId, { action: 'TRIGGER_UNLOCK_ALL' });
         }
     });

@@ -12,7 +12,9 @@
         "lint": "echo \"No linting configured\"",
         "test": "node --test tests/**/*.test.js",
         "test:capslock": "node scripts/test_capslock.js",
-        "test:stealth": "electron scripts/test_stealth.js"
+        "test:stealth": "electron scripts/test_stealth.js",
+        "ext:firefox": "node -e \"fs.copyFileSync('extension/manifest.firefox.json', 'extension/manifest.json'); console.log('Ready for Firefox');\"",
+        "ext:chrome": "node -e \"fs.copyFileSync('extension/manifest.chrome.json', 'extension/manifest.json'); console.log('Ready for Chrome');\""
     },
     "repository": {
         "type": "git",

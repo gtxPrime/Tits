@@ -9,11 +9,14 @@
 
     <body>
         <div class="container">
-            <!-- Sleek Minimalist Header (No image logo) -->
+            <!-- Header: TITS Brand & Status -->
             <header class="header">
                 <div class="brand">
                     <span class="brand-glyph">&gt;_</span>
-                    <span class="brand-title">TITS</span>
+                    <div class="brand-text">
+                        <span class="brand-title">TITS</span>
+                        <span class="brand-subtitle">ASSISTANT</span>
+                    </div>
                 </div>
                 <div class="status-pill active" id="global-status-pill">
                     <span class="status-dot"></span>
@@ -21,13 +24,13 @@
                 </div>
             </header>
 
-            <!-- Dual Switch Section -->
-            <section class="switch-panel">
+            <!-- Card 1: Core Toggles -->
+            <section class="key-card">
                 <!-- Switch 1: Paste Unblocker -->
                 <div class="switch-row">
                     <div class="switch-meta">
                         <div class="switch-name">Paste Unblocker</div>
-                        <div class="switch-desc">Unlock inputs & editors (Alt+V)</div>
+                        <div class="switch-desc">Bypass lockouts, Monaco & Ace (Alt+V)</div>
                     </div>
                     <label class="toggle">
                         <input type="checkbox" id="toggle-paste-enable" checked />
@@ -40,21 +43,42 @@
                 <!-- Switch 2: Typing Paste -->
                 <div class="switch-row">
                     <div class="switch-meta">
-                        <div class="switch-name">Typing Paste</div>
-                        <div class="switch-desc">Human keystroke simulation</div>
+                        <div class="switch-name">Typing Simulation</div>
+                        <div class="switch-desc">Human keystrokes & timing cadence</div>
                     </div>
                     <label class="toggle">
                         <input type="checkbox" id="toggle-typing-paste" />
                         <span class="slider emerald"></span>
                     </label>
                 </div>
+
+                <div class="divider"></div>
+
+                <!-- Switch 3: Auto-Backspace Fix -->
+                <div class="switch-row">
+                    <div class="switch-meta">
+                        <div class="switch-name">Auto-Backspace Fix</div>
+                        <div class="switch-desc">Hit typo &rarr; pause &rarr; backspace &rarr; fix</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="toggle-auto-backspace" checked />
+                        <span class="slider gold"></span>
+                    </label>
+                </div>
             </section>
 
-            <!-- Compact Tuning (Speed & Typos) -->
-            <section class="tuning-panel">
+            <!-- Card 2: Typing Engine Parameters (Linked to Remote) -->
+            <section class="key-card">
+                <div class="card-header-row">
+                    <span class="card-section-title">Typing Parameters</span>
+                    <span class="remote-link-tag" id="remote-link-badge" title="These settings are sent over WebSocket to receiver browser">
+                        ⚡ Linked to Remote
+                    </span>
+                </div>
+
                 <div class="slider-group">
                     <div class="slider-header">
-                        <span>Speed</span>
+                        <span class="slider-label">Keystroke Speed</span>
                         <span class="slider-val" id="speed-label">65 ms</span>
                     </div>
                     <input type="range" id="slider-speed" min="20" max="130" value="65" class="range" />
@@ -62,28 +86,135 @@
 
                 <div class="slider-group">
                     <div class="slider-header">
-                        <span>Typo Rate</span>
+                        <span class="slider-label">Typo Frequency</span>
                         <span class="slider-val" id="typo-label">4%</span>
                     </div>
-                    <input type="range" id="slider-typo" min="0" max="10" value="4" class="range" />
+                    <input type="range" id="slider-typo" min="0" max="15" value="4" class="range" />
+                </div>
+
+                <div class="settings-summary-pill" id="settings-summary-pill">Speed: 65ms &bull; Typos: 4% &bull; Auto-Backspace: ON</div>
+            </section>
+
+            <!-- Quick Action Deck -->
+            <section class="actions-grid">
+                <button id="btn-force-paste" class="btn btn-action" title="Force Paste into current input (Alt+V)">⚡ Paste</button>
+                <button id="btn-human-type" class="btn btn-action" title="Type into current input (Alt+Shift+V)">⌨ Type</button>
+                <button id="btn-stop-typing" class="btn btn-danger" title="Emergency Stop typing (Esc)">⏹ Stop</button>
+                <button id="btn-unlock-all" class="btn btn-subtle" title="Deep unlock all editors on page (Alt+U)">🔓 Unlock</button>
+            </section>
+
+            <!-- Card 3: Remote Relay Deck (Two-Way Peer Link) -->
+            <section class="key-card remote-card" id="remote-panel">
+                <div class="card-header-row" id="remote-toggle-btn" title="Toggle Remote Panel">
+                    <div class="remote-title">
+                        <span class="remote-icon">⟳</span>
+                        <span>Remote Peer Relay</span>
+                    </div>
+                    <div class="remote-header-right">
+                        <span class="remote-peer-badge" id="remote-peer-badge">Offline</span>
+                        <div class="remote-conn-status" id="remote-conn-dot"></div>
+                    </div>
+                </div>
+
+                <div class="remote-body" id="remote-body">
+                    <!-- URL & Room input row -->
+                    <div class="remote-inputs-stack">
+                        <div class="input-with-label">
+                            <span class="input-label">Server URL</span>
+                            <input
+                                type="text"
+                                id="remote-url-input"
+                                class="cyber-input"
+                                placeholder="ws://127.0.0.1:59432"
+                                spellcheck="false"
+                                title="WebSocket Server URL"
+                            />
+                        </div>
+
+                        <div class="input-with-label">
+                            <span class="input-label">Room Code</span>
+                            <div class="room-action-row">
+                                <input
+                                    type="text"
+                                    id="remote-room-input"
+                                    class="cyber-input room-code-input"
+                                    placeholder="STEALTH-165"
+                                    spellcheck="false"
+                                    title="Room Code (Shared between User 1 and User 2)"
+                                />
+                                <button id="remote-gen-room-btn" class="btn-dice" title="Generate random room code">🎲</button>
+                                <button id="remote-connect-btn" class="btn btn-remote-connect">Connect</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Injection Mode Selector -->
+                    <div class="remote-mode-selector">
+                        <span class="mode-select-label">Remote Action:</span>
+                        <div class="mode-segmented-control">
+                            <button id="mode-paste" class="mode-pill active" data-mode="paste" title="Receiver will instant-paste into focused input">
+                                ⚡ Instant Paste
+                            </button>
+                            <button
+                                id="mode-type"
+                                class="mode-pill"
+                                data-mode="type"
+                                title="Receiver will simulate human typing with your speed & typo settings"
+                            >
+                                ⌨ Simulated Typing
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Textarea & Counter -->
+                    <div class="textarea-container">
+                        <textarea
+                            id="remote-text-input"
+                            class="cyber-textarea"
+                            placeholder="Type or paste text to relay to peer browser tab..."
+                            rows="3"
+                        ></textarea>
+                        <div class="textarea-footer">
+                            <span class="char-count" id="remote-char-count">0 chars</span>
+                            <span class="remote-hint" id="remote-status-hint">Not connected</span>
+                        </div>
+                    </div>
+
+                    <!-- Send Button Row -->
+                    <div class="send-row">
+                        <button id="remote-send-btn" class="btn btn-cyber-send" disabled>
+                            <span>Relay Text to Peer</span>
+                            <span class="btn-subtext" id="send-btn-subtext">(Paste Mode)</span>
+                        </button>
+                    </div>
+
+                    <!-- Diagnostic Activity Terminal Feed -->
+                    <div class="terminal-deck">
+                        <div class="terminal-header">
+                            <div class="terminal-title">
+                                <span class="term-dot"></span>
+                                <span>Activity Feed</span>
+                            </div>
+                            <div class="terminal-actions">
+                                <button class="term-btn" id="remote-copy-logs-btn" title="Copy full diagnostics to clipboard">📋 Copy</button>
+                                <button class="term-btn" id="remote-export-logs-btn" title="Download report as .txt file">💾 Export</button>
+                                <button class="term-btn" id="remote-clear-feed-btn" title="Clear feed">Clear</button>
+                            </div>
+                        </div>
+                        <div class="terminal-log-window" id="remote-feed-list">
+                            <div class="feed-empty">Waiting for peer connection…</div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <!-- Minimal Action Row -->
-            <section class="actions-row">
-                <button id="btn-force-paste" class="btn btn-action" title="Force Paste (Alt+V)">Paste</button>
-                <button id="btn-human-type" class="btn btn-action" title="Type Paste (Alt+Shift+V)">Type</button>
-                <button id="btn-stop-typing" class="btn btn-danger" title="Stop Typing (Esc)">Stop</button>
-                <button id="btn-unlock-all" class="btn btn-subtle" title="Deep Unlock (Alt+U)">Unlock</button>
-            </section>
-
-            <!-- Discreet Hotkey Reference -->
+            <!-- Footer: Shortcut Guide -->
             <footer class="footer">
-                <span>Alt+V Paste</span>
-                <span>•</span>
-                <span>Alt+Shift+V Type</span>
-                <span>•</span>
-                <span>Esc Stop</span>
+                <span class="shortcut-tag"><kbd>Alt</kbd>+<kbd>V</kbd> Paste</span>
+                <span class="shortcut-sep">&bull;</span>
+                <span class="shortcut-tag"><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd> Type</span>
+                <span class="shortcut-sep">&bull;</span>
+                <span class="shortcut-tag"><kbd>Esc</kbd> Stop</span>
             </footer>
         </div>
 

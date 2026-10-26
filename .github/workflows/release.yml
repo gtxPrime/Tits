@@ -70,10 +70,11 @@ jobs:
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   script: |
+                      const tag = context.ref.startsWith('refs/tags/') ? context.ref.replace('refs/tags/', '') : 'v1.0.1';
                       const release = await github.rest.repos.getReleaseByTag({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
-                        tag: 'v1.0.0'
+                        tag: tag
                       });
                       for (const asset of release.data.assets) {
                         if (asset.name === 'RELEASES' || asset.name.endsWith('.nupkg')) {
@@ -89,4 +90,3 @@ jobs:
                           }
                         }
                       }
-

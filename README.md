@@ -32,6 +32,8 @@
     <span> &bull; </span>
     <a href="#-features">Features</a>
     <span> &bull; </span>
+    <a href="#-browser-companion-extension">Companion Extension</a>
+    <span> &bull; </span>
     <a href="#-hotkeys">Hotkeys</a>
     <span> &bull; </span>
     <a href="#-tech-stack--architecture">Tech Stack</a>
@@ -156,6 +158,23 @@ SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
 
 - **One-Click Share Logs Button:** Available in **Settings > Diagnostics & System Logs**. Export `logs.txt`, copy full diagnostics to clipboard, or inspect live log lines inside the app.
 - **Automated Capability Audit:** Detects screen share invisibility mechanisms (`WDA_EXCLUDEFROMCAPTURE` on Windows, `NSWindowSharingNone` on macOS), display scale factors, loopback audio presence, CapsLock LED status, and AI API latency.
+
+---
+
+## <a id="-browser-companion-extension"></a><img src="https://api.iconify.design/fa6-solid/puzzle-piece.svg?color=%23ffffff#gh-dark-mode-only" height="20" align="center" alt="Extension" /><img src="https://api.iconify.design/fa6-solid/puzzle-piece.svg?color=%23121212#gh-light-mode-only" height="20" align="center" alt="Extension" /> Browser Companion Extension (v1.0.0)
+
+> Manifest V3 companion extension for Chrome & Firefox: Universal paste unblocker, hostile listener shield, and natural human keystroke simulator.
+
+[![Extension Version](https://img.shields.io/badge/extension-v1.0.0-facc15?style=flat-square)](#)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-10b981?style=flat-square)](#)
+[![Chrome & Firefox](https://img.shields.io/badge/browsers-Chrome%20%7C%20Firefox-4285F4?style=flat-square)](#)
+
+- <img src="https://api.iconify.design/fa6-solid/unlock.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/unlock.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Hostile Paste & Event Defeat:** Strips hostile `preventDefault()` and `stopImmediatePropagation()` traps on `paste`, `copy`, and `contextmenu`. Unlocks locked instances in **Ace**, **Monaco**, and **CodeMirror** without altering buffer integrity.
+- <img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Realistic Human Typing Paste:** Simulates organic keyboard input with physical QWERTY typo engine, variable cadence jitter (±35%), and authentic backspace auto-correction.
+- <img src="https://api.iconify.design/fa6-solid/layer-group.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/layer-group.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Deep Shadow DOM & Terminal Traversal:** Unlocks nested shadow trees across Google Cloud Console, Cloud Shell (`xterm.js`), and encapsulated web components.
+- <img src="https://api.iconify.design/fa6-solid/eye-slash.svg?color=%23ffffff#gh-dark-mode-only" height="15" align="center" /><img src="https://api.iconify.design/fa6-solid/eye-slash.svg?color=%23121212#gh-light-mode-only" height="15" align="center" /> **Discreet Stealth UI:** Ultra-minimalist 260px popup with innocent terminal glyph (`>_`), zero DOM badges, and emergency halt (<kbd>Esc</kbd> / <kbd>Alt</kbd> + <kbd>X</kbd>).
+
+📖 **Read the full companion guide & installation instructions:** [extension/README.md](extension/README.md)
 
 ---
 

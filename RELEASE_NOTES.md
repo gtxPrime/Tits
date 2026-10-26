@@ -1,3 +1,88 @@
+# TITS Release Notes - v1.0.1
+
+## 🌟 What's New in v1.0.1
+
+### 🔄 Two-Way Remote Peer Relay (User 1 & User 2 Dual-Instance Architecture)
+
+- **Local WebSocket Relay Server**:
+    - Embedded lightweight WebSocket server (`src/utils/remoteServer.js`) listening on LAN IP/port `59432` with automatic LAN interface discovery.
+    - Zero cloud dependency: traffic stays 100% on local network directly between devices.
+- **Room-Based Peer Multiplexing**:
+    - Dynamic room codes (e.g. `STEALTH-165`) with one-click random room generator (`🎲`).
+    - Multiple browser instances join the same room; User 2 can send text from any browser/device to User 1's active exam/editor tab.
+    - Live peer connection badges (`🟢 2 Peers Live` / `🟡 Solo in Room`).
+    - Two-way acknowledgement loop: User 1 automatically responds with delivery feedback (`Injected into tab ✓`) back to User 2.
+
+---
+
+### ⌨️ Realistic Typo Engine & Auto-Backspace Correction
+
+- **Physical QWERTY Keyboard Adjacency**:
+    - When a typo is triggered according to the configured typo rate (0%–15%), the engine simulates an authentic finger slip onto an adjacent key (`a` → `s`/`q`/`z`/`w`), preserving exact capitalization.
+- **Human Realization & Auto-Backpress Fix**:
+    - Pauses for natural human cognitive realization delay (`120ms`–`240ms`).
+    - Dispatches authentic `Backspace` keystrokes and `deleteContentBackward` events to erase the error.
+    - Pauses after correction (`80ms`–`140ms`) before typing the correct intended character.
+    - New **Auto-Backspace Fix** toggle switch in popup allows toggling automatic backpress correction on or off.
+
+---
+
+### 🎛️ Linked Remote Settings Synchronization
+
+- **Real-Time Parameter Transmission**:
+    - All typing parameters configured by the sender (`speed` in ms/char, `typoRate` in %, and `autoBackspace` state) are packaged directly into the WebSocket relay packet.
+    - The receiver browser dynamically honors the sender's exact timing and typo configuration without requiring manual receiver adjustment.
+- **Dynamic Live Settings Summary**:
+    - Displays active parameters directly on the popup header and send button (`Speed: 65ms • Typos: 4% • Auto-Backspace: ON`).
+
+---
+
+### 📝 Rich-Text & TinyMCE Deep Adapter (OnlineNotepad Support)
+
+- **TinyMCE API Hooks & Iframe Drilling**:
+    - Direct integration with `window.tinymce.activeEditor.insertContent()` and `execCommand('delete')`.
+    - Deep traversal into nested rich-text iframes (`#editor_ifr`, `mce-content-body`) for flawless execution on platforms like `OnlineNotepad.org`, WordPress, and web CMS editors.
+- **Universal Code Editor Integration**:
+    - Full support for Monaco (VS Code Web, LeetCode), Ace (HackerRank, Replit), CodeMirror, Cloud Shell (`xterm.js`), and standard HTML5 input/textarea fields.
+
+---
+
+### 📋 Comprehensive Diagnostic Logs & Activity Terminal
+
+- **Integrated Activity Terminal Feed**:
+    - Live terminal deck in popup with color-coded status tags (`[INFO]`, `[OK]`, `[WARN]`, `[ERR]`, `[SENT]`, `[RECV]`, `[ACK]`) and millisecond timestamps.
+- **One-Click Diagnostic Export**:
+    - `📋 Copy Log` copies a formatted diagnostic report (browser/OS info, relay state, paired peer count, detected tabs, settings, and chronological logs) directly to clipboard.
+    - `💾 Export` saves report as a timestamped `.txt` file for debugging.
+
+---
+
+### 🎨 TITS Obsidian & Cyber Gold Aesthetic Overhaul
+
+- **Unified Visual Design System**:
+    - Matches the TITS desktop application design system: Obsidian Dark background (`#08090d`), Slate Surface (`#0f1118`), Elevated Cards (`#161922`), and glowing Cyber Gold Yellow accents (`#facc15`).
+    - Clean typography with `Inter` and `JetBrains Mono`.
+    - Glowing cyber sliders with filled progress tracks and micro-animated switches.
+
+---
+
+## 📦 Artifact Details (v1.0.1)
+
+- **Product**: `TITS - Test Intelligence & Tutoring System`
+- **Version**: `v1.0.1`
+- **Platforms**: `win32-x64`, `darwin-x64`, `linux-x64`
+- **Package**: `tits`
+- **Windows Executable**: `out/Tits-win32-x64/Tits.exe`
+- **Windows Installer**: `out/make/squirrel.windows/x64/Tits-1.0.1 Setup.exe`
+- **macOS Archive**: `out/make/darwin/Tits-v1.0.1-darwin-x64.zip`
+- **Linux Distribution**: `out/make/linux/Tits-v1.0.1-linux-x64.tar.gz`
+- **Companion Extension (Chrome)**: `out/make/extension/TITS-Companion-Extension-v1.0.1-Chrome.zip`
+- **Companion Extension (Firefox)**: `out/make/extension/TITS-Companion-Extension-v1.0.1-Firefox.zip`
+- **Companion Extension (Universal)**: `out/make/extension/TITS-Companion-Extension-v1.0.1-Universal.zip`
+- **License**: `GNU General Public License v3.0`
+
+---
+
 # TITS Release Notes - v1.0.0
 
 ## 🌟 What's New in v1.0.0
@@ -79,7 +164,7 @@
 
 ---
 
-## 📦 Artifact Details
+## 📦 Artifact Details (v1.0.0)
 
 - **Product**: `TITS - Test Intelligence & Tutoring System`
 - **Version**: `v1.0.0`

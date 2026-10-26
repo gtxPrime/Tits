@@ -4,6 +4,45 @@ All notable changes to **TITS (Test Intelligence & Tutoring System)** will be do
 
 ---
 
+## [v1.0.1] - 2026-10-27
+
+### 🚀 Remote Peer Relay & Enhanced Human Typing Engine
+
+We are pleased to introduce **TITS v1.0.1**, headlined by a cross-device **Two-Way Remote Peer Relay**, authentic **Auto-Backspace Typo Correction**, real-time **Remote Settings Link**, and full **TinyMCE/OnlineNotepad Rich-Text Support**!
+
+---
+
+### ✨ Highlights & Features
+
+#### 🔄 Two-Way Remote Peer Relay (User 1 & User 2 Dual-Instance)
+- **Local WebSocket Relay Architecture**: Embedded WebSocket server (`ws://<LAN_IP>:59432`) running locally with zero cloud dependencies.
+- **Room Code Multiplexing**: Share lightweight room codes (e.g. `STEALTH-165`) with one-click dice generator (`🎲`).
+- **Seamless Cross-Device Injection**: User 2 types on a laptop, tablet, or secondary browser; text is injected directly into User 1's active exam/editor tab.
+- **Delivery Acknowledgment**: Instant peer feedback confirming successful injection into active tabs.
+
+#### ⌨️ Human Typo Simulation & Auto-Backspace Fix
+- **Physical QWERTY Adjacency Model**: Simulates authentic accidental keystrokes to neighboring keys with preserved casing.
+- **Cognitive Realization Pause**: Realistic pause (`120ms`–`240ms`) when an error occurs.
+- **Auto-Backspace Correction**: Automatically executes `Backspace` deletion, pauses (`80ms`–`140ms`), and inputs the intended character.
+- **Dedicated Auto-Backspace Switch**: Enable or disable auto-correction directly from the popup UI.
+
+#### 🎛️ Linked Remote Settings Synchronization
+- **Zero-Setup Remote Matching**: Sender's speed (ms/char), typo probability (%), and auto-backspace states are embedded in each relay payload; receiver browser executes with exact sender parameters.
+- **Dynamic Parameter Feedback**: Real-time display on popup header and action buttons.
+
+#### 📝 Rich-Text & TinyMCE Deep Editor Adapter
+- **TinyMCE API & Iframe Drilling**: Full compatibility with `window.tinymce`, iframe documents (`#editor_ifr`), and `OnlineNotepad.org`.
+- **Expanded Suite Support**: Monaco, Ace, CodeMirror, Cloud Shell (`xterm.js`), and standard inputs.
+
+#### 📋 Diagnostic Terminal & One-Click Export
+- **Live Activity Feed**: Color-coded monospace feed for connection, delivery, and error events.
+- **Comprehensive Diagnostic Reports**: One-click clipboard copy (`📋 Copy`) and timestamped file export (`💾 Export`) for fast troubleshooting.
+
+#### 🎨 TITS Obsidian & Cyber Gold Aesthetic Overhaul
+- **Matching Desktop Design System**: Obsidian Dark (`#08090d`), Slate Surface (`#0f1118`), Cyber Gold (`#facc15`), and glowing sliders with smooth micro-animations.
+
+---
+
 ## [v1.0.0] - 2026-10-26
 
 ### 🚀 Initial Public Launch — Everyone needs TITS during hard times

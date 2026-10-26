@@ -1,0 +1,63 @@
+{
+  "browser": "156.0.8078.4",
+  "ace": "1.45.2",
+  "results": [
+    {
+      "name": "Default Chrome MV3 loads both content scripts",
+      "pass": true
+    },
+    {
+      "name": "Ace native paste preserves Unicode, digits and repeated X",
+      "pass": true
+    },
+    {
+      "name": "Ace native paste replaces selection without auto-indent",
+      "pass": true
+    },
+    {
+      "name": "Real Ctrl+V works using clipboardData",
+      "pass": true
+    },
+    {
+      "name": "Typing paste preserves exact multiline Unicode with typos disabled",
+      "pass": true
+    },
+    {
+      "name": "Starting another typing stream cancels previous",
+      "pass": true
+    },
+    {
+      "name": "Escape stops typing and leaves content stable",
+      "pass": true
+    },
+    {
+      "name": "Alt+V shortcut pastes exactly once",
+      "pass": true
+    },
+    {
+      "name": "Alt+Shift+V shortcut starts typing",
+      "pass": true
+    },
+    {
+      "name": "Plain textarea instant paste selection",
+      "pass": true
+    },
+    {
+      "name": "Plain textarea typing paste preserves newline and emoji",
+      "pass": true
+    },
+    {
+      "name": "Shadow DOM textarea uses focused target",
+      "pass": true
+    },
+    {
+      "name": "Contenteditable instant paste",
+      "pass": true
+    },
+    {
+      "name": "No JavaScript page errors",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

@@ -1,3 +1,7 @@
+# Compatibility repair 1.2.2
+
+Read [REPAIR-NOTES.md](REPAIR-NOTES.md) first for corrected installation steps, verified test scope, and portal limitations. The material below describes the original extension; its broad website and stealth claims have not been validated by this repair.
+
 # 🔓 Ace & Universal Paste Unlocker (with Human Typing Simulator)
 
 > **Restore paste, right-click, selection, and unlock Ace, Monaco, and CodeMirror editors on any website — including Google Cloud Shell & Console.**
@@ -39,7 +43,7 @@
 3. Click **Load unpacked**.
 4. Select the `extension/` folder located at:
     ```
-    f:\Source Codes\cheating-daddy\extension
+    path/to/extracted/extension
     ```
 5. The extension icon will appear in your browser toolbar!
 

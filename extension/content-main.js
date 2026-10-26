@@ -49,34 +49,9 @@
      ========================================================================== */
 
     function sanitizePastedText(text) {
-        if (!text || typeof text !== 'string') return text;
-        let cleaned = text;
-
-        // 1. Remove Ace internal font-metric test strings (Hebrew 'ה' & 'X' chains)
-        cleaned = cleaned.replace(/[\u0590-\u05FF]+/g, '');
-        cleaned = cleaned.replace(/X{10,}/g, '');
-
-        // 2. Strip concatenated gutter line numbers if accidentally included in copy
-        // E.g. "12345678910111213141516171819202122232425"
-        for (const startNum of [1, 0]) {
-            let expected = startNum;
-            let idx = 0;
-            while (idx < cleaned.length) {
-                const numStr = String(expected);
-                if (cleaned.startsWith(numStr, idx)) {
-                    idx += numStr.length;
-                    expected++;
-                } else {
-                    break;
-                }
-            }
-            if (expected - startNum >= 4) {
-                cleaned = cleaned.slice(idx);
-                break;
-            }
-        }
-
-        return cleaned;
+        // Clipboard text is user data. Do not strip Hebrew, repeated letters,
+        // numeric prefixes, indentation, or other valid source content.
+        return typeof text === 'string' ? text.replace(/\r\n?/g, '\n') : '';
     }
 
     /* ==========================================================================
@@ -336,7 +311,7 @@
 
         if (target.type === 'ace' && target.editor) {
             target.editor.setReadOnly(false);
-            target.editor.insert(ch);
+            target.editor.session.replace(target.editor.getSelectionRange(), ch);
             return;
         }
 
@@ -438,12 +413,10 @@
         showTypingIndicator();
 
         const baseSpeed = config.typingSpeed || 65;
-        const typoChance = config.typoRate || 0.04;
+        const typoChance = config.typoRate ?? 0.04;
 
-        for (let i = 0; i < text.length; i++) {
+        for (const char of text) {
             if (session.cancelled) break;
-
-            const char = text[i];
             const neighbors = QWERTY_NEIGHBORS[char];
 
             // Realistic human typo decision
@@ -509,7 +482,7 @@
 
         if (target.type === 'ace' && target.editor) {
             target.editor.setReadOnly(false);
-            target.editor.insert(text);
+            target.editor.session.replace(target.editor.getSelectionRange(), text);
             target.editor.focus();
             return true;
         }
@@ -602,23 +575,9 @@
             const isShiftInsert = e.shiftKey && e.key === 'Insert';
 
             if (isPaste || isShiftInsert) {
-                if (config.typingPasteEnabled) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    requestClipboardAndType();
-                    return;
-                }
+                // Let the browser emit its native paste event. That event
+                // carries clipboardData even when readText is unavailable.
 
-                if (config.pasteEnabled) {
-                    const target = getTargetEditorOrElement();
-                    if (target.type === 'ace' || target.type === 'monaco' || target.type === 'codemirror') {
-                        e.preventDefault();
-                        e.stopImmediatePropagation();
-                        requestClipboardAndInstantPaste();
-                        return;
-                    }
-                    e.stopImmediatePropagation();
-                }
             }
         },
         true

@@ -13,6 +13,7 @@ const { startClickHoldMonitor, stopClickHoldMonitor } = require('./utils/mouseTr
 const { solveCurrentExamQuestion } = require('./utils/examSolver');
 const storage = require('./storage');
 const debugLogger = require('./utils/debugLogger');
+const remoteServer = require('./utils/remoteServer');
 
 const geminiSessionRef = { current: null };
 let mainWindow = null;
@@ -73,6 +74,11 @@ app.whenReady().then(async () => {
     } catch (e) {
         console.error('Failed to setup Logs IPC handlers:', e);
     }
+    try {
+        setupRemoteIpcHandlers();
+    } catch (e) {
+        console.error('Failed to setup Remote IPC handlers:', e);
+    }
 });
 
 app.on('window-all-closed', () => {
@@ -92,6 +98,9 @@ app.on('before-quit', () => {
     destroyTray();
     try {
         require('./utils/localai').closeLocalSession();
+    } catch (e) {}
+    try {
+        remoteServer.stopServer();
     } catch (e) {}
 });
 
@@ -497,5 +506,35 @@ function setupExamIpcHandlers() {
         const { toggleCapsLock } = require('./utils/capsLock');
         toggleCapsLock();
         return { success: true };
+    });
+}
+
+function setupRemoteIpcHandlers() {
+    ipcMain.handle('remote:start', async (event, port) => {
+        try {
+            const result = remoteServer.startServer(port || 59432);
+            return { success: true, ...result };
+        } catch (error) {
+            console.error('Error starting remote server:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('remote:stop', async () => {
+        try {
+            remoteServer.stopServer();
+            return { success: true };
+        } catch (error) {
+            console.error('Error stopping remote server:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('remote:status', async () => {
+        try {
+            return { success: true, ...remoteServer.getStatus() };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
     });
 }

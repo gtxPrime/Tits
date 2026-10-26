@@ -60,6 +60,25 @@
 
 ---
 
+### 🧩 Browser Companion Extension (v1.0.0)
+
+- **Universal Clipboard & Editor Unlocker**:
+    - Complete bypass for hostile clipboard restrictions, event blockers, context menu suppression, and CSS selection disabling.
+    - Deep adapter unlocking for **Ace**, **Monaco**, and **CodeMirror** editors (`setReadOnly(false)`, restoring missing paste commands) without corrupting internal buffer metrics or indentation.
+    - Deep Shadow DOM traversal supporting Google Cloud Console, Cloud Shell (`xterm.js`), and modern encapsulated Web Components (`<cfc-text-field>`, `<mwc-textfield>`).
+- **Human Typing Paste Simulation**:
+    - Converts clipboard text into realistic, organic keyboard input with subtle cadence jitter (±35%) and thinking pauses after punctuation.
+    - Physical QWERTY keyboard adjacency engine: simulates natural finger slips, hesitation pauses, backspace erasures, and self-corrections.
+    - Emergency abort instantly available via <kbd>Esc</kbd> or <kbd>Alt</kbd> + <kbd>X</kbd>.
+- **Stealth & Cross-Browser Architecture**:
+    - Fully compatible with Manifest V3 for Chromium (Chrome, Edge, Brave, Arc, Opera) and Mozilla Firefox.
+    - 100% stealth design: zero DOM badges, zero overlays, zero external telemetry, innocent terminal glyph (`>_`), and compact 260px Obsidian/Cyber Gold popup.
+    - Interactive testbed sandbox included in `scripts/test_server.js` (`/test/test-sandbox.html`).
+- **Global Shortcuts**:
+    - `Alt + V` (Force Paste), `Alt + Shift + V` (Typing Paste), `Alt + U` (Deep Unlock), `Esc` / `Alt + X` (Stop Typing).
+
+---
+
 ## 📦 Artifact Details
 
 - **Product**: `TITS - Test Intelligence & Tutoring System`
@@ -68,4 +87,5 @@
 - **Package**: `tits`
 - **Unpacked Binary**: `out/TITS-win32-x64/TITS.exe`
 - **Windows Installer**: `out/make/squirrel.windows/x64/TITS-1.0.0 Setup.exe`
+- **Companion Extension**: `extension/` (Manifest V3 for Chrome & Firefox, v1.0.0)
 - **License**: `GNU General Public License v3.0`

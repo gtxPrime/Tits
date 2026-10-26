@@ -40,6 +40,22 @@ TITS is a fully client-side, 100% free and open-source **Bring Your Own Key (BYO
 - Direct secure local storage for Google Gemini and Groq API keys.
 - **Model Hub & Quota Tracker**: Real-time remaining quota calculation, daily token counter, latency metrics, and speed vs. intelligence rankings across Gemini 2.5 Flash, Gemini Flash Latest, Gemini Pro, and Groq.
 
+#### 🧩 Browser Companion Extension (v1.0.0)
+
+- **Universal Clipboard & Editor Unlocker**:
+    - Defeats hostile anti-paste restrictions, event traps (`paste`, `copy`, `cut`, `contextmenu`, `selectstart`), and CSS `user-select: none`.
+    - Deep adapter unlocking for **Ace**, **Monaco**, and **CodeMirror** editors, dynamically disabling `readOnly` locks and restoring native paste pipelines without corrupting buffer metrics or indentation.
+    - Deep Shadow DOM traversal supporting Google Cloud Console, Cloud Shell (`xterm.js`), and modern custom web components.
+- **Human Typing Paste Simulator**:
+    - Converts pasted clipboard text into natural human keystrokes with variable timing cadence (±35%) and punctuation hesitation.
+    - Physical QWERTY keyboard adjacency engine: simulates realistic typos, human realization pauses, backspace erasures, and auto-corrections.
+    - Emergency typing halt instantly available via <kbd>Esc</kbd> or <kbd>Alt</kbd> + <kbd>X</kbd>.
+- **Stealth by Design & Manifest V3**:
+    - 100% stealth: pure background execution, zero DOM badges, zero overlays, zero external telemetry, innocent terminal glyph (`>_`), and compact 260px Obsidian/Cyber Gold popup.
+    - Complete Manifest V3 support for Chromium (Chrome, Edge, Brave, Arc, Opera) and Mozilla Firefox.
+    - Dual isolated/main world script architecture preventing hostile page detection.
+    - Interactive testbed sandbox included in `scripts/test_server.js` (`/test/test-sandbox.html`).
+
 #### 🛡️ Privacy & Security
 
 - All inference requests communicate directly between your machine and model provider APIs.
@@ -48,18 +64,20 @@ TITS is a fully client-side, 100% free and open-source **Bring Your Own Key (BYO
 
 ### 📦 Multi-Platform Distributables
 
-| Platform    | Format                     | Filename                      | Description                                                      |
-| :---------- | :------------------------- | :---------------------------- | :--------------------------------------------------------------- |
-| **Windows** | Setup Installer (`.exe`)   | `Tits-1.0.0 Setup.exe`        | Standard Windows x64 desktop installer with start menu shortcuts |
-| **Windows** | Portable ZIP (`.zip`)      | `Tits-win32-x64-1.0.0.zip`    | Standalone portable bundle, no installation required             |
-| **macOS**   | Apple Silicon DMG (`.dmg`) | `Tits-1.0.0-arm64.dmg`        | Native drag-and-drop installer for Apple Silicon (M1/M2/M3/M4)   |
-| **macOS**   | Apple Silicon ZIP (`.zip`) | `Tits-darwin-arm64-1.0.0.zip` | Portable application bundle for Apple Silicon                    |
-| **macOS**   | Intel DMG (`.dmg`)         | `Tits-1.0.0-x64.dmg`          | Native drag-and-drop installer for Intel Macs                    |
-| **macOS**   | Intel ZIP (`.zip`)         | `Tits-darwin-x64-1.0.0.zip`   | Portable application bundle for Intel Macs                       |
-| **Linux**   | Debian / Ubuntu (`.deb`)   | `tits_1.0.0_amd64.deb`        | Native package for Ubuntu, Debian, Linux Mint, and Pop!_OS       |
-| **Linux**   | RedHat / Fedora (`.rpm`)   | `tits-1.0.0.x86_64.rpm`       | Native package for Fedora, RHEL, and openSUSE                    |
-| **Linux**   | Universal AppImage         | `Tits-1.0.0.AppImage`         | Single executable runnable across all modern Linux distros       |
-| **Linux**   | Portable ZIP (`.zip`)      | `Tits-linux-x64-1.0.0.zip`    | Standalone portable bundle for Linux x64                         |
+| Platform    | Format                      | Filename                      | Description                                                      |
+| :---------- | :-------------------------- | :---------------------------- | :--------------------------------------------------------------- |
+| **Windows** | Setup Installer (`.exe`)    | `Tits-1.0.0 Setup.exe`        | Standard Windows x64 desktop installer with start menu shortcuts |
+| **Windows** | Portable ZIP (`.zip`)       | `Tits-win32-x64-1.0.0.zip`    | Standalone portable bundle, no installation required             |
+| **macOS**   | Apple Silicon DMG (`.dmg`)  | `Tits-1.0.0-arm64.dmg`        | Native drag-and-drop installer for Apple Silicon (M1/M2/M3/M4)   |
+| **macOS**   | Apple Silicon ZIP (`.zip`)  | `Tits-darwin-arm64-1.0.0.zip` | Portable application bundle for Apple Silicon                    |
+| **macOS**   | Intel DMG (`.dmg`)          | `Tits-1.0.0-x64.dmg`          | Native drag-and-drop installer for Intel Macs                    |
+| **macOS**   | Intel ZIP (`.zip`)          | `Tits-darwin-x64-1.0.0.zip`   | Portable application bundle for Intel Macs                       |
+| **Linux**   | Debian / Ubuntu (`.deb`)    | `tits_1.0.0_amd64.deb`        | Native package for Ubuntu, Debian, Linux Mint, and Pop!_OS       |
+| **Linux**   | RedHat / Fedora (`.rpm`)    | `tits-1.0.0.x86_64.rpm`       | Native package for Fedora, RHEL, and openSUSE                    |
+| **Linux**   | Universal AppImage          | `Tits-1.0.0.AppImage`         | Single executable runnable across all modern Linux distros       |
+| **Linux**   | Portable ZIP (`.zip`)       | `Tits-linux-x64-1.0.0.zip`    | Standalone portable bundle for Linux x64                         |
+| **Browser** | Chrome / Chromium Extension | `extension/`                  | Manifest V3 unpackable extension for Chrome, Edge, Brave, Arc    |
+| **Browser** | Mozilla Firefox Extension   | `extension/`                  | Manifest V3 temporary/packed add-on for Mozilla Firefox          |
 
 ---
 

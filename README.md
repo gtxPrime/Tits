@@ -314,16 +314,16 @@ Compiled distributions will be located under `out/make/`.
 
 ## Browser extension: installation and usage
 
-The optional companion in [`extension/`](extension/) runs independently of the desktop app. It supports clipboard paste and character-by-character typing paste into compatible editors. Use only where you have permission to edit and paste.
+The companion extension in [`extension/`](extension/) runs independently or alongside the desktop app. It unlocks hostile copy/paste lockouts in code and text editors, realistically simulates human typing with backspace-corrected typos, and features a cross-device **Two-Way Remote Peer Relay**.
 
-- **Chrome / Brave / Edge:** extract the extension ZIP from the release, open your browser's Extensions page, enable Developer mode, and Load unpacked the `extension` folder. Reload the target tab.
-- **Firefox:** use the separate `extension-firefox` folder in the ZIP. Open `about:debugging` > This Firefox > Load Temporary Add-on and select its `manifest.json`. Temporary installs must be loaded again after restarting Firefox. Do not use the Chrome manifest: Firefox requires `background.scripts`, not `background.service_worker`.
-- **Use:** focus the target first. `Ctrl+V` / `Cmd+V` pastes normally; enable Typing Paste in the popup for character-by-character insertion. `Alt+V` pastes, `Alt+Shift+V` starts typing, and Escape or `Alt+X` stops it. Stop leaves already inserted text in place.
-- **Settings:** lower Speed is faster; set Typo Rate to 0% for literal code/text transfer. After pulling updates, reload the extension and target page.
+- **Chrome / Brave / Edge:** extract the extension ZIP from the release, open `chrome://extensions`, enable Developer mode, and Load unpacked the `extension` folder.
+- **Firefox:** open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on...**, and select `extension/manifest.firefox.json` (or switch with `npm run ext:firefox`).
+- **Use:** focus your target input or editor. `Ctrl+V` pastes normally; `Alt+V` force pastes; `Alt+Shift+V` starts simulated human typing; `Esc` / `Alt+X` immediately halts typing.
+- **Two-Way Remote Peer Relay:** connect two browsers or devices across your local network via shared Room Code (`ws://<LAN_IP>:59432`). User 2 types or pastes into the popup textarea and sends directly into User 1's active exam/editor tab with synchronized speed and typo settings.
+- **Auto-Backspace Fix:** authentic QWERTY neighbor typos with cognitive realization pause and automatic backspace erasure.
+- **Rich-Text & Editor Support:** Monaco (LeetCode, VS Code), Ace (HackerRank), CodeMirror, TinyMCE (`OnlineNotepad.org`, WordPress), and web terminals (`xterm.js`).
 
-[Full usage and troubleshooting](extension/USAGE.md) · [Local test results](extension/regression/results.json)
-
-The recorded editable-Ace/Chromium run passed 14 checks. Firefox runtime and signed-in portal behavior remain unverified. The extension does not prevent website autosaves.
+[Full usage and troubleshooting](extension/USAGE.md) · [Extension README](extension/README.md) · [Release Notes](RELEASE_NOTES.md)
 
 ---
 

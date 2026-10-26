@@ -127,6 +127,19 @@
      DEEP TARGET DISCOVERY (Supports Google Cloud Console Shadow DOM & Terminals)
      ========================================================================== */
 
+    let lastUserFocusedElement = null;
+
+    document.addEventListener(
+        'focusin',
+        function (e) {
+            const target = e.target;
+            if (target && target !== document.body && target !== document.documentElement) {
+                lastUserFocusedElement = target;
+            }
+        },
+        true
+    );
+
     function getDeepActiveElement(root = document) {
         let active = root.activeElement;
         while (active && active.shadowRoot && active.shadowRoot.activeElement) {
@@ -136,7 +149,14 @@
     }
 
     function getTargetEditorOrElement() {
-        const active = getDeepActiveElement() || document.activeElement;
+        let active = getDeepActiveElement() || document.activeElement;
+
+        // If window blurred when user switched to sender browser, restore last focused element!
+        if ((!active || active === document.body || active === document.documentElement) && lastUserFocusedElement) {
+            if (document.contains(lastUserFocusedElement)) {
+                active = lastUserFocusedElement;
+            }
+        }
 
         // 1. Google Cloud Shell / Xterm.js Terminal Check
         if (active) {
@@ -150,8 +170,17 @@
             }
         }
 
-        // 2. Ace Editor Check
-        const aceNode = active ? active.closest('.ace_editor') : document.querySelector('.ace_editor');
+        // 2. TinyMCE Editor Check (used by OnlineNotepad, WordPress, rich-text platforms)
+        if (window.tinymce && window.tinymce.editors && window.tinymce.editors.length > 0) {
+            const ed = window.tinymce.activeEditor || window.tinymce.editors[0];
+            if (ed) {
+                return { type: 'tinymce', editor: ed };
+            }
+        }
+
+        // 3. Ace Editor Check
+        let aceNode = active && active !== document.body ? (active.closest ? active.closest('.ace_editor') : null) : null;
+        if (!aceNode) aceNode = document.querySelector('.ace_editor');
         if (aceNode) {
             if (aceNode.env && aceNode.env.editor) return { type: 'ace', editor: aceNode.env.editor };
             if (aceNode.aceEditor) return { type: 'ace', editor: aceNode.aceEditor };
@@ -171,14 +200,61 @@
         }
 
         // 4. CodeMirror Check
-        const cmNode = active ? active.closest('.CodeMirror') : document.querySelector('.CodeMirror');
+        let cmNode = active && active !== document.body ? (active.closest ? active.closest('.CodeMirror') : null) : null;
+        if (!cmNode) cmNode = document.querySelector('.CodeMirror');
         if (cmNode && cmNode.CodeMirror) {
             return { type: 'codemirror', editor: cmNode.CodeMirror };
         }
 
         // 5. Standard Input / Textarea / ContentEditable
-        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
-            return { type: 'dom', element: active };
+        if (active && active !== document.body && active !== document.documentElement) {
+            if (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable) {
+                return { type: 'dom', element: active };
+            }
+        }
+
+        // 6. If active element is an IFRAME, drill into its contentDocument
+        if (active && active.tagName === 'IFRAME') {
+            try {
+                const doc = active.contentDocument || (active.contentWindow && active.contentWindow.document);
+                if (doc && doc.body) {
+                    const inner = doc.activeElement && doc.activeElement !== doc.body ? doc.activeElement : doc.body;
+                    return { type: 'dom', element: inner };
+                }
+            } catch (_) {}
+        }
+
+        // 7. Check iframes with editable documents (e.g. OnlineNotepad #editor_ifr)
+        const iframes = document.querySelectorAll('iframe');
+        for (const ifr of iframes) {
+            try {
+                const doc = ifr.contentDocument || (ifr.contentWindow && ifr.contentWindow.document);
+                if (
+                    doc &&
+                    doc.body &&
+                    (doc.body.isContentEditable ||
+                        doc.designMode === 'on' ||
+                        doc.body.id === 'tinymce' ||
+                        doc.body.classList.contains('mce-content-body'))
+                ) {
+                    const inner = doc.activeElement && doc.activeElement !== doc.body ? doc.activeElement : doc.body;
+                    return { type: 'dom', element: inner };
+                }
+            } catch (_) {}
+        }
+
+        // 6. Automatic input discovery: Find visible text box, textarea, or contenteditable on page
+        const candidates = document.querySelectorAll(
+            'textarea:not([disabled]):not([readonly]), input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([disabled]):not([readonly]), [contenteditable="true"]:not([contenteditable="false"]), [role="textbox"], .ql-editor, .ProseMirror'
+        );
+        for (const cand of candidates) {
+            const rect = cand.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                try {
+                    cand.focus();
+                } catch (_) {}
+                return { type: 'dom', element: cand };
+            }
         }
 
         return { type: 'dom', element: active || document.body };
@@ -309,6 +385,13 @@
             return;
         }
 
+        if (target.type === 'tinymce' && target.editor) {
+            try {
+                target.editor.insertContent(ch);
+            } catch (_) {}
+            return;
+        }
+
         if (target.type === 'ace' && target.editor) {
             target.editor.setReadOnly(false);
             target.editor.session.replace(target.editor.getSelectionRange(), ch);
@@ -363,6 +446,13 @@
             return;
         }
 
+        if (target.type === 'tinymce' && target.editor) {
+            try {
+                target.editor.execCommand('delete');
+            } catch (_) {}
+            return;
+        }
+
         if (target.type === 'ace' && target.editor) {
             target.editor.remove('left');
             return;
@@ -384,7 +474,8 @@
         el.focus();
         let deleted = false;
         try {
-            deleted = document.execCommand('delete', false, null);
+            const targetDoc = el.ownerDocument || document;
+            deleted = targetDoc.execCommand('delete', false, null);
         } catch (e) {}
 
         if (!deleted) {
@@ -401,7 +492,7 @@
 
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-    async function startHumanTyping(rawText) {
+    async function startHumanTyping(rawText, customDelay, customTypoRate, customAutoBackspace) {
         const text = sanitizePastedText(rawText);
         if (!text || text.length === 0) return;
         stopHumanTyping();
@@ -412,8 +503,23 @@
 
         showTypingIndicator();
 
-        const baseSpeed = config.typingSpeed || 65;
-        const typoChance = config.typoRate ?? 0.04;
+        const baseSpeed = customDelay || config.typingSpeed || 65;
+        const typoChance =
+            customTypoRate !== undefined
+                ? customTypoRate > 1
+                    ? customTypoRate / 100
+                    : customTypoRate
+                : config.typoRate !== undefined
+                  ? config.typoRate > 1
+                      ? config.typoRate / 100
+                      : config.typoRate
+                  : 0.04;
+        const doAutoBackspace =
+            customAutoBackspace !== undefined
+                ? Boolean(customAutoBackspace)
+                : config.autoBackspace !== undefined
+                  ? Boolean(config.autoBackspace)
+                  : true;
 
         for (const char of text) {
             if (session.cancelled) break;
@@ -432,13 +538,15 @@
                 await sleep(realizeDelay);
                 if (session.cancelled) break;
 
-                // 3. Backspace to fix
-                executeBackspace(target);
+                // 3. Auto backspace to fix
+                if (doAutoBackspace) {
+                    executeBackspace(target);
 
-                // 4. Pause after backspace (~80ms to 140ms)
-                const pauseDelay = 80 + Math.random() * 60;
-                await sleep(pauseDelay);
-                if (session.cancelled) break;
+                    // 4. Pause after backspace (~80ms to 140ms)
+                    const pauseDelay = 80 + Math.random() * 60;
+                    await sleep(pauseDelay);
+                    if (session.cancelled) break;
+                }
             }
 
             // 5. Type correct character
@@ -478,6 +586,14 @@
             target.element.focus();
             document.execCommand('insertText', false, text);
             return true;
+        }
+
+        if (target.type === 'tinymce' && target.editor) {
+            try {
+                target.editor.focus();
+                target.editor.insertContent(text);
+                return true;
+            } catch (_) {}
         }
 
         if (target.type === 'ace' && target.editor) {
@@ -577,7 +693,6 @@
             if (isPaste || isShiftInsert) {
                 // Let the browser emit its native paste event. That event
                 // carries clipboardData even when readText is unavailable.
-
             }
         },
         true
@@ -1019,14 +1134,14 @@
         switch (type) {
             case 'EXECUTE_FORCE_PASTE':
                 if (config.typingPasteEnabled) {
-                    startHumanTyping(payload.text);
+                    startHumanTyping(payload.text, payload.delay, payload.typoRate, payload.autoBackspace);
                 } else {
                     executeInstantPaste(payload.text);
                 }
                 break;
 
             case 'EXECUTE_HUMAN_TYPING':
-                startHumanTyping(payload.text);
+                startHumanTyping(payload.text, payload.delay, payload.typoRate, payload.autoBackspace);
                 break;
 
             case 'STOP_HUMAN_TYPING':
@@ -1038,6 +1153,7 @@
                 if (payload.typingPasteEnabled !== undefined) config.typingPasteEnabled = payload.typingPasteEnabled;
                 if (payload.typingSpeed !== undefined) config.typingSpeed = payload.typingSpeed;
                 if (payload.typoRate !== undefined) config.typoRate = payload.typoRate;
+                if (payload.autoBackspace !== undefined) config.autoBackspace = payload.autoBackspace;
                 if (config.pasteEnabled) {
                     scanAndUnlock();
                 }

@@ -2,10 +2,13 @@
     "manifest_version": 3,
     "name": "TITS - Paste & Editor Unlocker",
     "short_name": "TITS",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "TITS Companion: Enables pasting on any website, unlocks Ace & Monaco editors, and types like a human with realistic typos & backspace fixes.",
-    "permissions": ["activeTab", "storage", "contextMenus", "clipboardRead", "scripting"],
+    "permissions": ["activeTab", "tabs", "storage", "contextMenus", "clipboardRead", "scripting"],
     "host_permissions": ["<all_urls>"],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'; connect-src ws: wss:;"
+    },
     "background": {
         "service_worker": "background.js"
     },

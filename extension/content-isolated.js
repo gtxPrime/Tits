@@ -97,12 +97,13 @@
     }
 
     function syncConfigWithMainWorld() {
-        ext.storage.local.get(['pasteEnabled', 'typingPasteEnabled', 'typingSpeed', 'typoRate'], items => {
+        ext.storage.local.get(['pasteEnabled', 'typingPasteEnabled', 'typingSpeed', 'typoRate', 'autoBackspace'], items => {
             postToMainWorld('UPDATE_CONFIG', {
                 pasteEnabled: items.pasteEnabled !== undefined ? items.pasteEnabled : true,
                 typingPasteEnabled: items.typingPasteEnabled !== undefined ? items.typingPasteEnabled : false,
                 typingSpeed: items.typingSpeed !== undefined ? items.typingSpeed : 65,
                 typoRate: items.typoRate !== undefined ? items.typoRate : 0.04,
+                autoBackspace: items.autoBackspace !== undefined ? items.autoBackspace : true,
             });
         });
     }
@@ -211,6 +212,34 @@
             case 'GET_PAGE_STATS':
                 postToMainWorld('REQUEST_STATS');
                 sendResponse({ stats: currentStats });
+                break;
+
+            case 'REMOTE_INJECT':
+                const injectText = typeof request.text === 'string' ? request.text : '';
+                if (!injectText) {
+                    sendResponse({ success: false, reason: 'Empty text' });
+                    return;
+                }
+                // Also write to local clipboard buffer so it is immediately pasteable with Ctrl+V
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(injectText).catch(() => {});
+                }
+                if (request.mode === 'type') {
+                    postToMainWorld('EXECUTE_HUMAN_TYPING', {
+                        text: injectText,
+                        delay: request.delay,
+                        typoRate: request.typoRate,
+                        autoBackspace: request.autoBackspace,
+                    });
+                } else {
+                    postToMainWorld('EXECUTE_FORCE_PASTE', {
+                        text: injectText,
+                        delay: request.delay,
+                        typoRate: request.typoRate,
+                        autoBackspace: request.autoBackspace,
+                    });
+                }
+                sendResponse({ success: true, mode: request.mode || 'paste', length: injectText.length });
                 break;
         }
     });

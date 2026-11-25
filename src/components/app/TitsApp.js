@@ -8,6 +8,8 @@ import { OnboardingView } from '../views/OnboardingView.js';
 import { AICustomizeView } from '../views/AICustomizeView.js';
 import { FeedbackView } from '../views/FeedbackView.js';
 import { ExamSolverView } from '../views/ExamSolverView.js';
+import { ReaderView } from '../views/ReaderView.js';
+import { ChatView } from '../views/ChatView.js';
 import { icons } from '../../utils/icons.js';
 
 export class TitsApp extends LitElement {
@@ -99,6 +101,33 @@ export class TitsApp extends LitElement {
             background: #28c840;
         }
 
+        .sidebar-toggle {
+            width: 24px;
+            height: 24px;
+            margin-left: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0;
+            transition:
+                background 0.15s ease,
+                color 0.15s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .sidebar-toggle.active {
+            color: #ffffff;
+        }
+
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
@@ -111,6 +140,11 @@ export class TitsApp extends LitElement {
                 width var(--transition),
                 min-width var(--transition),
                 opacity var(--transition);
+        }
+
+        /* Menu hidden: keep content clear of the window controls in the top-left corner. */
+        .app-shell.sidebar-collapsed .content {
+            padding-top: 38px;
         }
 
         .sidebar.hidden {
@@ -523,6 +557,7 @@ export class TitsApp extends LitElement {
         _whisperDownloading: { state: true },
         _localAiDownloadProgress: { state: true },
         _lastExamResult: { state: true },
+        _sidebarCollapsed: { state: true },
     };
 
     constructor() {
@@ -541,6 +576,17 @@ export class TitsApp extends LitElement {
         this.responses = [];
         this.currentResponseIndex = -1;
         this._viewInstances = new Map();
+        this._sidebarCollapsed = false;
+        try {
+            this._sidebarCollapsed = localStorage.getItem('tits.sidebarCollapsed') === '1';
+        } catch (_) {}
+        this._onSidebarKey = e => {
+            // Ctrl+B / Cmd+B toggles the left menu.
+            if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (e.code === 'KeyB' || e.key.toLowerCase() === 'b')) {
+                e.preventDefault();
+                this.toggleSidebar();
+            }
+        };
         this._isClickThrough = false;
         this._awaitingNewResponse = false;
         this._currentResponseIsComplete = true;
@@ -649,6 +695,7 @@ export class TitsApp extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
+        window.addEventListener('keydown', this._onSidebarKey);
 
         if (window.require) {
             const { ipcRenderer } = window.require('electron');
@@ -670,6 +717,7 @@ export class TitsApp extends LitElement {
 
     disconnectedCallback() {
         super.disconnectedCallback();
+        window.removeEventListener('keydown', this._onSidebarKey);
         this._stopTimer();
         if (window.require) {
             const { ipcRenderer } = window.require('electron');
@@ -739,6 +787,13 @@ export class TitsApp extends LitElement {
     }
 
     // ── Navigation ──
+
+    toggleSidebar() {
+        this._sidebarCollapsed = !this._sidebarCollapsed;
+        try {
+            localStorage.setItem('tits.sidebarCollapsed', this._sidebarCollapsed ? '1' : '0');
+        } catch (_) {}
+    }
 
     navigate(view) {
         this.currentView = view;
@@ -969,6 +1024,12 @@ export class TitsApp extends LitElement {
                     ></customize-view>
                 `;
 
+            case 'chat':
+                return html`<chat-view></chat-view>`;
+
+            case 'reader':
+                return html`<reader-view></reader-view>`;
+
             case 'feedback':
                 return html`<feedback-view></feedback-view>`;
 
@@ -1041,6 +1102,23 @@ export class TitsApp extends LitElement {
                 </svg>`,
             },
             {
+                id: 'chat',
+                label: 'Ask AI',
+                icon: html`<svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>`,
+            },
+            {
                 id: 'history',
                 label: 'History',
                 icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
@@ -1091,7 +1169,7 @@ export class TitsApp extends LitElement {
         ];
 
         return html`
-            <div class="sidebar ${this._isLiveMode() ? 'hidden' : ''}">
+            <div class="sidebar ${this._isLiveMode() || this._sidebarCollapsed ? 'hidden' : ''}">
                 <div class="sidebar-brand">
                     <div style="display:flex;align-items:center;gap:12px;">
                         <div
@@ -1199,12 +1277,33 @@ export class TitsApp extends LitElement {
         const isLive = this._isLiveMode();
 
         return html`
-            <div class="app-shell">
+            <div class="app-shell ${this._sidebarCollapsed && !isLive ? 'sidebar-collapsed' : ''}">
                 <div class="top-drag-bar ${isLive ? 'hidden' : ''}">
                     <div class="traffic-lights">
                         <button class="traffic-light close" @click=${() => this.handleClose()} title="Close"></button>
                         <button class="traffic-light minimize" @click=${() => this._handleMinimize()} title="Minimize"></button>
                         <button class="traffic-light maximize" title="Maximize"></button>
+                        <button
+                            class="sidebar-toggle ${this._sidebarCollapsed ? '' : 'active'}"
+                            @click=${() => this.toggleSidebar()}
+                            title="${this._sidebarCollapsed ? 'Show menu' : 'Hide menu'} (Ctrl+B)"
+                            aria-label="Toggle menu"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="15"
+                                height="15"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <line x1="9" y1="3" x2="9" y2="21"></line>
+                            </svg>
+                        </button>
                     </div>
                     <div class="drag-region"></div>
                 </div>

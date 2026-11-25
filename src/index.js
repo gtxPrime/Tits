@@ -79,6 +79,16 @@ app.whenReady().then(async () => {
     } catch (e) {
         console.error('Failed to setup Remote IPC handlers:', e);
     }
+    try {
+        require('./utils/readerIpc').setupReaderIpcHandlers();
+    } catch (e) {
+        console.error('Failed to setup Reader IPC handlers:', e);
+    }
+    try {
+        require('./utils/chatIpc').setupChatIpcHandlers();
+    } catch (e) {
+        console.error('Failed to setup Chat IPC handlers:', e);
+    }
 });
 
 app.on('window-all-closed', () => {

@@ -152,6 +152,28 @@ SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
 
 ---
 
+### <img src="https://api.iconify.design/fa6-solid/book-open.svg?color=%23ffffff#gh-dark-mode-only" height="18" align="center" alt="Reader" /><img src="https://api.iconify.design/fa6-solid/book-open.svg?color=%23121212#gh-light-mode-only" height="18" align="center" alt="Reader" /> Document Reader (PDF, topic by topic)
+
+> Open a PDF inside the main window and read it as topics, sub-topics, tables and Q&A instead of raw pages.
+
+- **Structure Rebuilt from Layout:** Headings become topics in a sidebar, bold labels become cards with quick-jump chips, and lists, multi-column tables (even across pages) and `Q:` / `A:` pairs keep their shape.
+- **Fast Navigation:** Full-text search with per-topic match counts (<kbd>Ctrl</kbd> + <kbd>F</kbd>), <kbd>←</kbd> / <kbd>→</kbd> between topics, adjustable text size, and drag-and-drop or <kbd>Ctrl</kbd> + <kbd>O</kbd> to open.
+- **Same Window:** Opens from **Exam Solver → Load PDF** as a page of the app, and stays loaded when you switch pages. Nothing from the PDF is written to disk.
+
+📖 **How to write PDFs that read well:** [docs/PDF_READER_GUIDE.md](docs/PDF_READER_GUIDE.md)
+
+---
+
+### <img src="https://api.iconify.design/fa6-solid/comments.svg?color=%23ffffff#gh-dark-mode-only" height="18" align="center" alt="Ask AI" /><img src="https://api.iconify.design/fa6-solid/comments.svg?color=%23121212#gh-light-mode-only" height="18" align="center" alt="Ask AI" /> Ask AI (text chat threads)
+
+> Type questions to Gemini with your saved API key, without starting a live session.
+
+- **Threads with Context:** Each chat is a thread; every follow-up is sent with that thread's earlier messages, so the AI remembers the conversation.
+- **Saved Locally:** Threads are stored on your machine (one JSON file each in the config folder's `chats/` directory) and can be reopened, continued, or deleted individually or all at once.
+- **Streaming & Safe Rendering:** Replies stream in with Markdown and code highlighting, can be stopped mid-answer, and are sanitized before display. Links open in your default browser.
+
+---
+
 ### <img src="https://api.iconify.design/fa6-solid/file-lines.svg?color=%23ffffff#gh-dark-mode-only" height="18" align="center" alt="Diagnostics" /><img src="https://api.iconify.design/fa6-solid/file-lines.svg?color=%23121212#gh-light-mode-only" height="18" align="center" alt="Diagnostics" /> Cross-Platform Diagnostics & Share Logs (`logs.txt`)
 
 > Comprehensive runtime inspection for debugging features across Windows, macOS, and Linux.
@@ -180,7 +202,7 @@ SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
 
 ## <a id="-hotkeys"></a><img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23ffffff#gh-dark-mode-only" height="20" align="center" alt="Hotkeys" /><img src="https://api.iconify.design/fa6-solid/keyboard.svg?color=%23121212#gh-light-mode-only" height="20" align="center" alt="Hotkeys" /> Keyboard Shortcuts
 
-All shortcuts can be reconfigured in **Settings (BYOK)**:
+All shortcuts except **Toggle Left Menu** can be reconfigured in **Settings (BYOK)**. The left menu can also be hidden with the panel button next to the window controls:
 
 | Action                     |    Windows / Linux    |        macOS         | Purpose                                             |
 | :------------------------- | :-------------------: | :------------------: | :-------------------------------------------------- |
@@ -193,6 +215,7 @@ All shortcuts can be reconfigured in **Settings (BYOK)**:
 | **Scroll Response Up**     |  `Ctrl + Shift + Up`  |  `Cmd + Shift + Up`  | Scrolls response content upward                     |
 | **Scroll Response Down**   | `Ctrl + Shift + Down` | `Cmd + Shift + Down` | Scrolls response content downward                   |
 | **Emergency Erase & Quit** |  `Ctrl + Shift + E`   |  `Cmd + Shift + E`   | Immediately purges session from RAM and quits       |
+| **Toggle Left Menu**       |      `Ctrl + B`       |      `Cmd + B`       | Hides or shows the sidebar for more space           |
 
 ---
 
@@ -225,7 +248,7 @@ cheating-daddy
 │   │
 │   ├── components/
 │   │   ├── app/               # TitsApp root container and AppHeader
-│   │   └── views/             # ExamSolverView, CustomizeView, AssistantView
+│   │   └── views/             # ExamSolverView, CustomizeView, AssistantView, ReaderView, ChatView
 │   │
 │   ├── i18n/
 │   │   ├── index.js           # Lightweight lookup engine with fallback and interpolation
@@ -234,7 +257,14 @@ cheating-daddy
 │   │   ├── zh.json            # Chinese (简体中文) dictionary
 │   │   └── hi.json            # Hindi (हिन्दी) dictionary
 │   │
+│   ├── reader/
+│   │   ├── reader.js          # Document Reader UI (topics, cards, search), mounted in ReaderView
+│   │   └── reader.css         # Reader styles, scoped to the view's shadow root
+│   │
 │   ├── utils/
+│   │   ├── documentParser.js  # PDF → topics / sub-headings / tables / Q&A (pdf.js)
+│   │   ├── readerIpc.js       # Open-dialog and drag-and-drop PDF parsing IPC
+│   │   ├── chatIpc.js         # Ask AI threads: local storage + streaming Gemini chat
 │   │   ├── examSolver.js      # Vision extraction, options matching, and latency logs
 │   │   ├── screenCapture.js   # Cursor-proximity bounding box cropping
 │   │   ├── tray.js            # Dynamic Windows taskbar notification tray manager
@@ -250,6 +280,9 @@ cheating-daddy
 ├── scripts/
 │   ├── test_capslock.js       # Standalone CapsLock LED hardware test utility
 │   └── test_stealth.js        # System Tray and Screen Ray live diagnostic utility
+│
+├── docs/
+│   └── PDF_READER_GUIDE.md    # How to write PDFs for the Document Reader
 │
 ├── tests/                     # 67+ unit and integration tests (100% passing)
 ├── CONTRIBUTING.md            # Guidelines, architectural principles, and PR steps

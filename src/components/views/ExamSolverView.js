@@ -610,6 +610,11 @@ export class ExamSolverView extends LitElement {
         }
     }
 
+    openDocumentReader() {
+        const app = window.titsApp || document.querySelector('tits-app');
+        if (app && typeof app.navigate === 'function') app.navigate('reader');
+    }
+
     async toggleChannel(channelName) {
         this[channelName] = !this[channelName];
         if (window.tits && window.tits.storage) {
@@ -802,6 +807,15 @@ export class ExamSolverView extends LitElement {
                                 <span class="channel-desc">Pulses keyboard LED for option (1=A, 2=B, 3=C)</span>
                             </div>
                             <div class="m3-switch ${this.enableCapsLockIndicator ? 'active' : ''}"></div>
+                        </div>
+
+                        <div class="channel-card" title="Open a PDF topic by topic" @click=${() => this.openDocumentReader()}>
+                            <div class="channel-icon">${icons.scroll(18)}</div>
+                            <div class="channel-info">
+                                <span class="channel-name">Load PDF</span>
+                                <span class="channel-desc">Read a PDF here, topic by topic</span>
+                            </div>
+                            <div class="channel-icon">${icons.arrowUpRight(16)}</div>
                         </div>
                     </div>
                 </div>

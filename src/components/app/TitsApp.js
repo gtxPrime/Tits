@@ -8,6 +8,7 @@ import { OnboardingView } from '../views/OnboardingView.js';
 import { AICustomizeView } from '../views/AICustomizeView.js';
 import { FeedbackView } from '../views/FeedbackView.js';
 import { ExamSolverView } from '../views/ExamSolverView.js';
+import { ReaderView } from '../views/ReaderView.js';
 import { icons } from '../../utils/icons.js';
 
 export class TitsApp extends LitElement {
@@ -968,6 +969,9 @@ export class TitsApp extends LitElement {
                         .onLayoutModeChange=${lm => this.handleLayoutModeChange(lm)}
                     ></customize-view>
                 `;
+
+            case 'reader':
+                return html`<reader-view></reader-view>`;
 
             case 'feedback':
                 return html`<feedback-view></feedback-view>`;

@@ -41,6 +41,7 @@
     "dependencies": {
         "@google/genai": "^1.2.0",
         "electron-squirrel-startup": "^1.0.1",
+        "pdfjs-dist": "^4.10.38",
         "ws": "^8.19.0"
     },
     "devDependencies": {
